@@ -1,0 +1,2311 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>Audit Report</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600&family=Roboto+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<!--
+=====================================================================
+HOW TO USE THIS TEMPLATE
+=====================================================================
+1. All content lives in the <script id="report-data"> block as JSON.
+   Edit the text and numbers there. The layout and styling never change.
+2. To save as PDF: browser Print, Save as PDF, turn on "Background graphics".
+3. If the page shows a red "data error" box, the JSON has a typo
+   (usually a missing comma or quote). The message says where.
+
+BLOCK TYPES (each block has "type" plus these fields)
+  text         title, paragraphs: ["...", "..."]
+  bullets      title, items: ["...", "..."]
+  scorecards   items: [{value, label, sub, tone}]      tone = good | warn | (empty)
+  proof        title, caption, items: [{value, label}] dark strip, 4 items work best
+  table        title, caption, searchable (true/false), search_placeholder,
+               columns: [{key, label, kind}]           kind = text | num | sev | chip | mono
+               rows: [{ key: value, ... }]             sev values: High, Medium, Low, OK,
+                                                       Available, Observed, Partial,
+                                                       Differently defined, Not available, Unconfirmed
+  code         label, code                             dark code block
+  compare      left / right: {label, tone, code, note} two code blocks side by side
+  bars         title, caption, max, value_width, items: [{label, value, display, tone}]
+  composition  title, caption, items: [{label, value, display, color}]
+  stacked      title, caption, normalize, legend: [{label, color}],
+               rows: [{label, segments: [n, n, ...], display}]   (added in this version)
+  cards        title, columns (1-4), items: [{tag, title, text}]
+  note         label, text                             lime-edged note
+  callout      title, text                             dark panel
+  skyband      title, text                             blue panel
+  phases       items: [{label, title, text, effort}]   roadmap rows
+
+INLINE FORMATTING inside any text: **bold**   `code`   ==lime highlight==   [link text](https://example.com)
+=====================================================================
+-->
+<style>
+:root{
+  --bg:#EEEADE; --surface:#F6F4EC; --ink:#2A2B29; --ny:#E1FF01; --bl:#B8D3D8; --tp:#BFC0B6; --wh:#FFFFFF;
+  --line:#D9D4C5; --muted:#6E6E66; --ink-soft:#55564F; --ink-mute:#7A7B72; --refdom:#5E8C97; --good:#5E7D4F;
+  --warn:#C24E1E;
+  --serif:"TT Lakes Neue","Roboto",system-ui,sans-serif;
+  --head:"TT Lakes Neue Head","TT Lakes Neue",Roboto,sans-serif;
+  --sans:"Roboto",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"Roboto Mono",ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+  color-scheme: light;
+}
+
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+html,body{margin:0;padding:0}
+body{background:var(--bg);color:var(--ink);font-family:var(--sans);font-weight:400;line-height:1.6;-webkit-font-smoothing:antialiased}
+[id]{scroll-margin-top:64px}
+
+.container{max-width:1140px;margin:0 auto;padding:0 30px}
+@media (max-width:820px){.container{padding:0 18px}}
+
+/* ---- brand head ---- */
+.brandhead{display:flex;align-items:center;justify-content:space-between;gap:18px;padding:20px 0}
+.brandhead .logo{height:32px;width:auto;display:block}
+.brandhead .brandtag{font-family:var(--mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);text-align:right;line-height:1.5}
+@media (max-width:560px){.brandhead{flex-direction:column;align-items:flex-start;gap:10px}.brandhead .brandtag{text-align:left}}
+
+/* ---- sticky chip nav ---- */
+.navchips{position:sticky;top:0;z-index:50;background:var(--bg);border-top:1px solid var(--line);border-bottom:1.5px solid var(--line);padding:12px 0}
+.navchips .row{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none}
+.navchips .row::-webkit-scrollbar{display:none}
+.navchip{font-family:var(--mono);font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);border:1px solid var(--line);border-radius:100px;padding:6px 13px;background:var(--bg);white-space:nowrap;cursor:pointer;transition:background .15s ease,color .15s ease,border-color .15s ease}
+.navchip:hover{color:var(--ink);border-color:var(--ink)}
+.navchip:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+
+/* ---- type ---- */
+.eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);display:flex;align-items:center;gap:10px;margin-bottom:14px}
+.eyebrow::before{content:"";width:26px;height:3px;background:var(--ink);display:inline-block;flex-shrink:0}
+h1{font-family:var(--serif);font-weight:400;font-size:clamp(34px,5vw,52px);line-height:1.05;letter-spacing:-.02em;margin:0 0 16px;max-width:24ch;text-wrap:balance}
+h1 em{font-style:italic;font-weight:400}
+h2{font-family:var(--serif);font-weight:400;font-size:clamp(24px,2.8vw,32px);letter-spacing:-.012em;margin:0 0 8px;text-wrap:balance}
+h3{font-family:var(--serif);font-weight:400;font-size:18px;margin:0 0 6px}
+h4{font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin:0 0 10px}
+p{margin:0 0 14px;max-width:74ch}
+a{color:var(--ink)}
+.lead{font-size:17px;color:var(--ink-soft);max-width:70ch}
+.u-lm{background:linear-gradient(transparent 62%,var(--ny) 62%);padding:0 .05em}
+.u-bl{background:linear-gradient(transparent 62%,var(--bl) 62%);padding:0 .05em}
+
+/* ---- pills, tags ---- */
+.tag{display:inline-block;font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);border:1px solid var(--line);border-radius:100px;padding:3px 9px;margin:0 6px 6px 0}
+.classchip{font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;background:var(--ny);color:var(--ink);padding:3px 9px;border-radius:100px;font-weight:600;display:inline-block}
+
+/* ---- layout ---- */
+.hero{padding:34px 0 34px;border-bottom:1.5px solid var(--line)}
+section.section{padding:48px 0;border-bottom:1.5px solid var(--line)}
+section.section:last-of-type{border-bottom:none}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:24px}
+@media (max-width:880px){.grid2{grid-template-columns:1fr}}
+.responsive-grid{display:grid}
+@media (max-width:880px){.responsive-grid{grid-template-columns:1fr !important}}
+
+.card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:22px}
+
+/* ---- score cards ---- */
+.scorecards{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:14px}
+.score{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:16px 16px 14px}
+.score .v{font-family:var(--head);font-weight:600;font-size:clamp(24px,3vw,30px);line-height:1;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+.score .v.warn{color:var(--warn)}
+.score .k{font-family:var(--mono);font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-top:8px}
+.score .sub{font-size:12px;color:var(--ink-soft);margin-top:4px}
+
+/* ---- lists ---- */
+ul.clean{list-style:none;max-width:74ch;margin:0;padding-left:0}
+ul.clean li{position:relative;padding-left:22px;margin-bottom:9px}
+ul.clean li::before{content:"";position:absolute;left:0;top:9px;width:9px;height:9px;background:var(--ny);border:1.5px solid var(--ink);border-radius:2px}
+
+/* ---- panels ---- */
+.skyband{background:var(--bl);border-radius:20px;padding:36px}
+.skyband h2{max-width:24ch;margin-bottom:12px}
+.skyband .lead{color:#36474a;max-width:62ch}
+.callout{background:var(--ink);color:#f3f0e6;border-radius:16px;padding:26px 28px}
+.callout h2,.callout h3{color:#fff}
+.callout .lead{color:#cfcabb}
+.callout .lime{color:var(--ny)}
+.callout p{color:#cfcabb}
+.callout code{color:#e6e3d8}
+
+/* ---- proof strip (dark, 4 col stat band) ---- */
+.proof{background:var(--ink);border-radius:16px;padding:22px 26px;display:grid;grid-template-columns:repeat(4,1fr);gap:18px}
+.proof .pi{border-left:2px solid var(--ny);padding-left:14px}
+.proof .pv{font-family:var(--head);font-weight:600;font-size:21px;color:#fff;line-height:1.1;font-variant-numeric:tabular-nums}
+.proof .pk{font-family:var(--mono);font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;color:#a8a89e;margin-top:5px}
+@media (max-width:880px){.proof{grid-template-columns:1fr 1fr}}
+
+/* ---- tables ---- */
+.tbl-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:14px;min-width:520px}
+th{background:var(--bl);color:var(--ink);text-align:left;padding:10px 14px;font-size:11.5px;letter-spacing:.1em;text-transform:uppercase;font-family:var(--mono);font-weight:600}
+th:first-child{border-radius:14px 0 0 14px} th:last-child{border-radius:0 14px 14px 0}
+td{padding:11px 14px;border-bottom:1px solid rgba(42,43,41,.09);vertical-align:top}
+tr:last-child td{border-bottom:none}
+td.num{font-family:var(--mono);font-size:13px;font-variant-numeric:tabular-nums;white-space:nowrap}
+
+/* ---- horizontal bar rows (inline graphs, no chart library) ---- */
+.hb-row{display:grid;grid-template-columns:1fr 100px 46px;align-items:center;gap:12px;padding:7px 0}
+.hb-label{font-size:12.5px;color:var(--ink-soft);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.hb-track{height:13px;background:rgba(184,211,216,.42);border-radius:8px;overflow:hidden}
+.hb-fill{height:100%;background:var(--ink);border-radius:0 6px 6px 0}
+.hb-fill.warn{background:var(--warn)}
+.hb-val{font-family:var(--mono);font-size:11.5px;color:var(--muted);text-align:right;font-variant-numeric:tabular-nums}
+
+/* ---- composition bar (part to whole) ---- */
+.comp-bar{display:flex;height:26px;border-radius:6px;overflow:hidden;border:1px solid var(--line)}
+.comp-legend{display:flex;gap:18px;flex-wrap:wrap;margin-top:12px}
+.comp-legend-item{display:flex;align-items:center;gap:7px;font-family:var(--mono);font-size:11px;color:var(--ink-soft)}
+.comp-swatch{width:11px;height:11px;border-radius:2px;flex:none}
+
+.note{border-left:4px solid var(--ny);background:rgba(255,255,255,.5);border-radius:0 18px 18px 0;padding:14px 18px;font-size:13.5px;color:var(--ink-soft)}
+
+footer.sitefoot{padding:28px 0;color:var(--muted);font-size:12.5px;border-top:1.5px solid var(--line)}
+
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}html{scroll-behavior:auto}}
+
+@page{size:A4;margin:16mm 14mm}
+@media print{
+  body{background:#EEEADE;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .navchips{position:static}
+  .card,.score,.skyband,.callout,.proof,.note,.hb-row,tr{break-inside:avoid}
+  h2,h3,h4{break-after:avoid}
+  a{color:inherit;text-decoration:none}
+}
+
+/* ---- v2 additions ---- */
+.score .v.good{color:var(--good)}
+code{font-family:var(--mono);font-size:.92em;background:rgba(42,43,41,.06);padding:1px 5px;border-radius:4px;overflow-wrap:anywhere}
+
+/* ---- template additions ---- */
+.samplebar{position:sticky;top:0;z-index:100;background:var(--warn);color:#fff;font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;text-align:center;padding:8px 14px}
+body.has-sample .navchips{top:33px}
+.block{margin-top:26px}
+h3.bt{margin:0 0 12px}
+.caption{font-size:12.5px;color:var(--muted);margin:10px 0 0;max-width:none}
+.sev{display:inline-block;font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;padding:3px 9px;border-radius:100px;font-weight:600;white-space:nowrap}
+.sev.high,.sev.critical{background:var(--warn);color:#fff}
+.sev.medium{background:var(--ny);color:var(--ink)}
+.sev.low{background:var(--tp);color:var(--ink)}
+.sev.ok{background:var(--good);color:#fff}
+pre.code{margin:0 0 6px;background:var(--ink);color:#e6e3d8;border-radius:12px;padding:16px 18px;overflow-x:auto;font-family:var(--mono);font-size:12px;line-height:1.65;white-space:pre}
+.hb-wide .hb-row{grid-template-columns:minmax(120px,280px) 1fr 80px}
+.phase{display:grid;grid-template-columns:160px 1fr;gap:20px;padding:22px 0;border-top:1.5px solid var(--line)}
+.phase:first-child{border-top:none;padding-top:6px}
+.phase .pn{font-family:var(--mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.phase p{margin-bottom:6px}
+.phase .effort{font-size:13px;color:var(--ink-soft)}
+@media (max-width:700px){.phase{grid-template-columns:1fr;gap:6px}}
+.search{display:block;margin:0 0 12px;padding:10px 14px;width:100%;max-width:420px;border:1px solid var(--line);border-radius:100px;font-family:var(--mono);font-size:13px;background:var(--surface);color:var(--ink)}
+.data-error{max-width:720px;margin:60px auto;padding:22px;border:2px solid var(--warn);border-radius:12px;background:#fff;font-family:var(--mono);font-size:13px;line-height:1.6}
+.callout .lime,.proof .lime{color:var(--ny)}
+.callout h3{font-size:22px;margin-bottom:10px}
+.card h3{margin-top:2px}
+
+/* ---- research-report additions (same tokens, no new colours) ---- */
+.sev.available,.sev.observed{background:var(--good);color:#fff}
+.sev.partial{background:var(--ny);color:var(--ink)}
+.sev.differentlydefined{background:var(--bl);color:var(--ink)}
+.sev.notavailable{background:var(--warn);color:#fff}
+.sev.unconfirmed{background:var(--tp);color:var(--ink)}
+.st-fill{display:flex;height:100%;border-radius:0 6px 6px 0;overflow:hidden}
+.st-fill > div{height:100%}
+.comp-legend.tight{margin-top:4px;margin-bottom:12px}
+.proof-wrap .caption{margin-top:12px}
+@media (max-width:560px){.hb-wide .hb-row{grid-template-columns:1fr 90px !important}.hb-wide .hb-row .hb-track{grid-column:1 / -1;grid-row:2}.hb-wide .hb-row .hb-label{white-space:normal}}
+</style>
+</head>
+<body>
+<div id="app"></div>
+
+<!-- ============================ DATA ============================ -->
+<script id="report-data" type="application/json">
+{
+  "meta": {
+    "title": "AI Conversation Dataset Research · Part 1 · WLDM",
+    "brand_tag": "AI conversation dataset research · Part 1",
+    "brand_date": "October 2026",
+    "show_logo": true,
+    "sample_data": false,
+    "footer": "Prepared by WLDM AI Research Lab. Figures describe the available research datasets as measured in this phase, not a representative sample of AI users."
+  },
+  "sections": [
+    {
+      "id": "overview",
+      "nav": "Overview",
+      "hero": true,
+      "eyebrow": "Part 1 · AI conversation dataset research",
+      "title": "4.3 million AI conversations, measured for what they can ==honestly support==",
+      "lead": "Three research collections, WildChat, LMSYS Chat 1M and ShareChat, were examined for repeated content, missing text, metadata coverage, source and citation fields, and cross-platform comparability. The result is a usable research corpus with specific, measurable limits.",
+      "blocks": [
+        {
+          "type": "scorecards",
+          "items": [
+            {
+              "value": "4,329,444",
+              "label": "Raw conversation records",
+              "sub": "across three collections; not a sample of all AI users"
+            },
+            {
+              "value": "3,956,823",
+              "label": "Distinct exact dialogue sequences",
+              "sub": "after exact role-and-text matching within and across collections",
+              "tone": "good"
+            },
+            {
+              "value": "53,632",
+              "label": "U.S. English-labelled multi-turn",
+              "sub": "WildChat only; the other collections have no U.S. field"
+            },
+            {
+              "value": "6,817",
+              "label": "ShareChat conversations with selected topic labels",
+              "sub": "a minimum count, not a share of consumer conversations"
+            }
+          ]
+        },
+        {
+          "type": "proof",
+          "items": [
+            {
+              "value": "3,199,860",
+              "label": "WildChat records"
+            },
+            {
+              "value": "1,000,000",
+              "label": "LMSYS Chat 1M records"
+            },
+            {
+              "value": "129,584",
+              "label": "ShareChat conversations"
+            },
+            {
+              "value": "5",
+              "label": "ShareChat platform files"
+            }
+          ]
+        },
+        {
+          "type": "note",
+          "label": "Evidence standard",
+          "text": "Every number in this report describes the available research datasets, not a representative sample of all users of AI. Exact matching is not the same as semantic equivalence. A brand or URL appearing in a conversation does not establish a recommendation, a citation or purchase intent. Percentages appear only where the numerator and denominator are both stated; otherwise the count is reported."
+        }
+      ]
+    },
+    {
+      "id": "s1-wildchat",
+      "nav": "1 · WildChat",
+      "eyebrow": "Section 1 · WildChat: repeated conversations and empty messages",
+      "title": "Repeated conversations in WildChat are ==repeated content==, not proof of duplicate records",
+      "lead": "Research question: are repeated conversation hashes evidence of duplicate records, and how much empty-message content is present?",
+      "blocks": [
+        {
+          "type": "scorecards",
+          "items": [
+            {
+              "value": "3,199,860",
+              "label": "Conversation records",
+              "sub": "each with a unique first-turn identifier"
+            },
+            {
+              "value": "10,334,364",
+              "label": "Messages",
+              "sub": "5,167,182 user and 5,167,182 assistant"
+            },
+            {
+              "value": "2,869,082",
+              "label": "Distinct exact dialogue sequences",
+              "sub": "unique role-and-text sequences",
+              "tone": "good"
+            },
+            {
+              "value": "330,778",
+              "label": "Excess identical-content occurrences",
+              "sub": "repeated content, not records to delete"
+            }
+          ]
+        },
+        {
+          "type": "composition",
+          "title": "Figure 1.1 · WildChat records split into distinct sequences and repeated occurrences",
+          "items": [
+            {
+              "label": "Distinct exact dialogue sequences",
+              "value": 2869082,
+              "display": "2,869,082 (89.7%)",
+              "color": "ink"
+            },
+            {
+              "label": "Excess identical-content occurrences",
+              "value": 330778,
+              "display": "330,778 (10.3%)",
+              "color": "warn"
+            }
+          ],
+          "caption": "Denominator: all 3,199,860 WildChat conversation records. Every record in both parts is a separately logged record. Source table: part1_dataset_overview.csv."
+        },
+        {
+          "type": "text",
+          "paragraphs": [
+            "**39,306** content-hash groups contain more than one record, and those groups hold **370,084** records. Each group contributes one distinct sequence and its remaining members form the excess: 370,084 records minus 39,306 groups gives exactly the 330,778 excess occurrences shown above.",
+            "A dialogue-text check found **zero** repeated-hash groups whose records differ in dialogue content, so the hash behaves as a reliable content fingerprint. It is not a record identifier. Unique first-turn identifiers exist for all 3,199,860 records, which means each repeated item is a separately logged record that happens to carry identical text."
+          ]
+        },
+        {
+          "type": "table",
+          "title": "How to read the repeated-content figures",
+          "columns": [
+            {
+              "key": "m",
+              "label": "Measure"
+            },
+            {
+              "key": "v",
+              "label": "Count",
+              "kind": "num"
+            },
+            {
+              "key": "w",
+              "label": "What it is, and what it is not"
+            }
+          ],
+          "rows": [
+            {
+              "m": "Content-hash groups with repetition",
+              "v": "39,306",
+              "w": "Groups of two or more records with identical roles and dialogue text."
+            },
+            {
+              "m": "Records in those groups",
+              "v": "370,084",
+              "w": "Unique logged records belonging to repeated-content groups."
+            },
+            {
+              "m": "Excess identical-content occurrences",
+              "v": "330,778",
+              "w": "Records minus distinct exact sequences. Not a count of upload errors."
+            },
+            {
+              "m": "Repeated-hash groups with differing dialogue",
+              "v": "0",
+              "w": "Confirms that a shared hash means shared content."
+            },
+            {
+              "m": "Records with a unique first-turn identifier",
+              "v": "3,199,860",
+              "w": "Every record is individually identifiable, independent of its content hash."
+            }
+          ],
+          "caption": "Source table: part1_duplicate_quality.csv, WildChat rows."
+        },
+        {
+          "type": "bars",
+          "title": "Figure 1.2 · Blank message text in WildChat, by role",
+          "value_width": "90px",
+          "items": [
+            {
+              "label": "User messages with blank text",
+              "value": 28864,
+              "display": "28,864",
+              "tone": "warn"
+            },
+            {
+              "label": "Assistant messages with blank text",
+              "value": 17,
+              "display": "17"
+            },
+            {
+              "label": "Conversations with a blank message",
+              "value": 24895,
+              "display": "24,895"
+            }
+          ],
+          "caption": "Total blank messages: 28,881 of 10,334,364 messages. The blank-message and conversation counts are rows of part1_duplicate_quality.csv; the user and assistant split is a separately verified result recorded alongside that row."
+        },
+        {
+          "type": "note",
+          "label": "Interpretation",
+          "text": "Some repeated-content clusters consist of very short, generic inputs, which is why repeated text does not automatically signal an error. Empty input is not evidence of any particular user motive. Conversation roles and turn-count structure reconciled in the full count checks."
+        }
+      ]
+    },
+    {
+      "id": "s2-sharechat",
+      "nav": "2 · ShareChat",
+      "eyebrow": "Section 2 · ShareChat: missing content and structure quality",
+      "title": "Missing text in ShareChat is small, uneven by platform, and ==not always missing content==",
+      "lead": "Research question: what portions of the shared-conversation collection have missing text, irregular roles or inconsistent metadata?",
+      "blocks": [
+        {
+          "type": "scorecards",
+          "items": [
+            {
+              "value": "129,584",
+              "label": "Conversations",
+              "sub": "across five platform files"
+            },
+            {
+              "value": "1,199,899",
+              "label": "Message rows",
+              "sub": "one data row per message"
+            },
+            {
+              "value": "600,827",
+              "label": "User messages"
+            },
+            {
+              "value": "599,072",
+              "label": "AI messages"
+            }
+          ]
+        },
+        {
+          "type": "bars",
+          "title": "Figure 2.1 · ShareChat conversations by platform",
+          "value_width": "90px",
+          "items": [
+            {
+              "label": "ChatGPT",
+              "value": 94086,
+              "display": "94,086"
+            },
+            {
+              "label": "Perplexity",
+              "value": 14612,
+              "display": "14,612"
+            },
+            {
+              "label": "Grok",
+              "value": 13149,
+              "display": "13,149"
+            },
+            {
+              "label": "Gemini",
+              "value": 6826,
+              "display": "6,826"
+            },
+            {
+              "label": "Claude",
+              "value": 911,
+              "display": "911"
+            }
+          ],
+          "caption": "Counts reflect conversations that were publicly shared and collected from each platform. They are not market share or a measure of product popularity."
+        },
+        {
+          "type": "table",
+          "title": "Figure 2.2 · Platform comparison: conversations, message rows and AI responses",
+          "columns": [
+            {
+              "key": "p",
+              "label": "Platform"
+            },
+            {
+              "key": "c",
+              "label": "Conversations",
+              "kind": "num"
+            },
+            {
+              "key": "m",
+              "label": "Message rows",
+              "kind": "num"
+            },
+            {
+              "key": "u",
+              "label": "User messages",
+              "kind": "num"
+            },
+            {
+              "key": "a",
+              "label": "AI messages",
+              "kind": "num"
+            }
+          ],
+          "rows": [
+            {
+              "p": "ChatGPT",
+              "c": "94,086",
+              "m": "976,378",
+              "u": "489,031",
+              "a": "487,347"
+            },
+            {
+              "p": "Claude",
+              "c": "911",
+              "m": "8,364",
+              "u": "4,182",
+              "a": "4,182"
+            },
+            {
+              "p": "Gemini",
+              "c": "6,826",
+              "m": "67,668",
+              "u": "33,834",
+              "a": "33,834"
+            },
+            {
+              "p": "Grok",
+              "c": "13,149",
+              "m": "98,888",
+              "u": "49,476",
+              "a": "49,412"
+            },
+            {
+              "p": "Perplexity",
+              "c": "14,612",
+              "m": "48,601",
+              "u": "24,304",
+              "a": "24,297"
+            },
+            {
+              "p": "**All five platforms**",
+              "c": "129,584",
+              "m": "1,199,899",
+              "u": "600,827",
+              "a": "599,072"
+            }
+          ],
+          "caption": "Source table: part1_sharechat_platforms.csv."
+        },
+        {
+          "type": "bars",
+          "title": "Figure 2.3 · Blank plain_text messages by platform",
+          "value_width": "90px",
+          "items": [
+            {
+              "label": "Grok",
+              "value": 2041,
+              "display": "2,041",
+              "tone": "warn"
+            },
+            {
+              "label": "Gemini",
+              "value": 477,
+              "display": "477",
+              "tone": ""
+            },
+            {
+              "label": "ChatGPT",
+              "value": 288,
+              "display": "288",
+              "tone": ""
+            },
+            {
+              "label": "Perplexity",
+              "value": 70,
+              "display": "70",
+              "tone": ""
+            },
+            {
+              "label": "Claude",
+              "value": 54,
+              "display": "54",
+              "tone": ""
+            }
+          ],
+          "caption": "2,930 blank plain_text fields in total, affecting 1,000 conversations."
+        },
+        {
+          "type": "table",
+          "title": "Figure 2.4 · Conversations affected by blank plain_text",
+          "columns": [
+            {
+              "key": "p",
+              "label": "Platform"
+            },
+            {
+              "key": "b",
+              "label": "Blank fields",
+              "kind": "num"
+            },
+            {
+              "key": "c",
+              "label": "Conversations affected",
+              "kind": "num"
+            },
+            {
+              "key": "s",
+              "label": "Affected ÷ platform conversations",
+              "kind": "mono"
+            },
+            {
+              "key": "note",
+              "label": "Caveat"
+            }
+          ],
+          "rows": [
+            {
+              "p": "ChatGPT",
+              "b": "288",
+              "c": "166",
+              "s": "166 ÷ 94,086 = 0.18%",
+              "note": ""
+            },
+            {
+              "p": "Claude",
+              "b": "54",
+              "c": "31",
+              "s": "31 ÷ 911 = 3.40%",
+              "note": "All 54 rows hold alternative content in fields such as thinking, code or analysis."
+            },
+            {
+              "p": "Gemini",
+              "b": "477",
+              "c": "85",
+              "s": "85 ÷ 6,826 = 1.25%",
+              "note": ""
+            },
+            {
+              "p": "Grok",
+              "b": "2,041",
+              "c": "648",
+              "s": "648 ÷ 13,149 = 4.93%",
+              "note": ""
+            },
+            {
+              "p": "Perplexity",
+              "b": "70",
+              "c": "70",
+              "s": "70 ÷ 14,612 = 0.48%",
+              "note": ""
+            },
+            {
+              "p": "**All five platforms**",
+              "b": "2,930",
+              "c": "1,000",
+              "s": "1,000 ÷ 129,584 = 0.77%",
+              "note": ""
+            }
+          ],
+          "caption": "Source table: part1_sharechat_platforms.csv."
+        },
+        {
+          "type": "note",
+          "label": "A blank plain_text field is not always an empty answer",
+          "text": "The count does not always mean the entire assistant content is absent. For Claude, every one of the 54 rows with blank `plain_text` holds alternative content in fields such as thinking, code or analysis."
+        },
+        {
+          "type": "table",
+          "title": "Figure 2.5 · Structural and metadata irregularities",
+          "columns": [
+            {
+              "key": "f",
+              "label": "Finding"
+            },
+            {
+              "key": "s",
+              "label": "Scope"
+            },
+            {
+              "key": "c",
+              "label": "Count",
+              "kind": "num"
+            },
+            {
+              "key": "r",
+              "label": "How to read it"
+            }
+          ],
+          "rows": [
+            {
+              "f": "Conversations ending with a user message",
+              "s": "ChatGPT",
+              "c": "1,780",
+              "r": "Conversation completeness differs by platform."
+            },
+            {
+              "f": "Conversations with no user message",
+              "s": "ChatGPT",
+              "c": "16",
+              "r": "Small ordering anomalies also occur on other platforms."
+            },
+            {
+              "f": "Declared turn count does not match messages",
+              "s": "ChatGPT",
+              "c": "2,204",
+              "r": "Recorded message ordering is a better check of the interaction than the declared turn count."
+            },
+            {
+              "f": "Missing language labels",
+              "s": "All ShareChat rows",
+              "c": "5,222",
+              "r": "A metadata gap, separate from message content."
+            },
+            {
+              "f": "Blank topic fields on AI messages",
+              "s": "All platforms",
+              "c": "By design",
+              "r": "Topics are assigned to user messages only. Not an extraction failure."
+            }
+          ]
+        },
+        {
+          "type": "table",
+          "title": "Figure 2.6 · Date and model coverage by platform",
+          "columns": [
+            {
+              "key": "p",
+              "label": "Platform"
+            },
+            {
+              "key": "d",
+              "label": "Dates"
+            },
+            {
+              "key": "m",
+              "label": "Model"
+            }
+          ],
+          "rows": [
+            {
+              "p": "ChatGPT",
+              "d": "Partly available; some anomalous future timestamps",
+              "m": "Partly available"
+            },
+            {
+              "p": "Claude",
+              "d": "No usable date column",
+              "m": "No usable model column"
+            },
+            {
+              "p": "Gemini",
+              "d": "Created and published dates, partly available",
+              "m": "Partly available"
+            },
+            {
+              "p": "Grok",
+              "d": "Not documented in this phase",
+              "m": "Some values encode roles rather than models"
+            },
+            {
+              "p": "Perplexity",
+              "d": "`last_updated` only, which is not a conversation creation date",
+              "m": "Not documented in this phase"
+            }
+          ],
+          "caption": "Date and model fields are not directly comparable across platforms without describing each definition."
+        }
+      ]
+    },
+    {
+      "id": "s3-duplicates",
+      "nav": "3 · Duplicates",
+      "eyebrow": "Section 3 · Exact duplicates, content quality and interpretation",
+      "title": "Across 4,329,444 records, 3,956,823 dialogue sequences are ==exactly distinct==",
+      "lead": "Research question: how much content overlap exists, and what does repeated text tell us about research reliability?",
+      "blocks": [
+        {
+          "type": "proof",
+          "items": [
+            {
+              "value": "4,329,444",
+              "label": "Raw conversation records"
+            },
+            {
+              "value": "3,956,823",
+              "label": "Distinct exact sequences"
+            },
+            {
+              "value": "372,621",
+              "label": "Pooled excess occurrences"
+            },
+            {
+              "value": "7",
+              "label": "Sequences in all three collections"
+            }
+          ],
+          "caption": "Pooled excess is raw records minus distinct exact sequences. None of these figures implies that a repeated sequence is an erroneously duplicated user event."
+        },
+        {
+          "type": "table",
+          "title": "Figure 3.1 · Raw records and distinct exact sequences by collection",
+          "columns": [
+            {
+              "key": "c",
+              "label": "Collection"
+            },
+            {
+              "key": "r",
+              "label": "Raw records",
+              "kind": "num"
+            },
+            {
+              "key": "d",
+              "label": "Distinct exact sequences",
+              "kind": "num"
+            },
+            {
+              "key": "e",
+              "label": "Excess occurrences",
+              "kind": "num"
+            },
+            {
+              "key": "g",
+              "label": "Repeated-content groups",
+              "kind": "num"
+            },
+            {
+              "key": "gr",
+              "label": "Records in groups",
+              "kind": "num"
+            }
+          ],
+          "rows": [
+            {
+              "c": "WildChat",
+              "r": "3,199,860",
+              "d": "2,869,082",
+              "e": "330,778",
+              "g": "39,306",
+              "gr": "370,084"
+            },
+            {
+              "c": "LMSYS Chat 1M",
+              "r": "1,000,000",
+              "d": "960,713",
+              "e": "39,287",
+              "g": "6,920",
+              "gr": "46,207"
+            },
+            {
+              "c": "ShareChat (five platform files)",
+              "r": "129,584",
+              "d": "127,579",
+              "e": "2,005",
+              "g": "Not reported",
+              "gr": "Not reported"
+            },
+            {
+              "c": "**All three, pooled**",
+              "r": "4,329,444",
+              "d": "3,956,823",
+              "e": "372,621",
+              "g": "",
+              "gr": ""
+            }
+          ],
+          "caption": "ShareChat's 2,005 include five repeats that cross platform files. The pooled excess of 372,621 equals the three within-source excesses (372,070) plus 551 sequences that also appear in another collection. Source tables: part1_dataset_overview.csv, part1_duplicate_quality.csv."
+        },
+        {
+          "type": "bars",
+          "title": "Figure 3.2 · Exact sequences shared between collections",
+          "value_width": "70px",
+          "items": [
+            {
+              "label": "WildChat and LMSYS",
+              "value": 539,
+              "display": "539"
+            },
+            {
+              "label": "WildChat and ShareChat",
+              "value": 12,
+              "display": "12"
+            },
+            {
+              "label": "LMSYS and ShareChat",
+              "value": 7,
+              "display": "7"
+            },
+            {
+              "label": "All three collections",
+              "value": 7,
+              "display": "7",
+              "tone": "warn"
+            }
+          ],
+          "caption": "Counts of exact sequences, not a claim that the collections sample the same population. Each pairwise count includes the seven sequences found in all three, so all seven LMSYS and ShareChat shared sequences also appear in WildChat."
+        },
+        {
+          "type": "code",
+          "title": "Figure 3.3 · Pooled distinct sequences by inclusion-exclusion",
+          "code": "Within-source distinct sequences\n  WildChat                       2,869,082\n  LMSYS Chat 1M                    960,713\n  ShareChat                        127,579\n  Simple sum                     3,957,374\n\nSubtract pairwise overlaps\n  539 + 12 + 7                       - 558\nAdd back the three-way overlap         + 7\n\nPooled distinct sequences        3,956,823",
+          "caption": "Subtracting the pairwise overlaps without adding back the three-way overlap would understate pooled uniqueness by 7."
+        },
+        {
+          "type": "cards",
+          "title": "Definitions used in this report",
+          "columns": 2,
+          "items": [
+            {
+              "tag": "Definition",
+              "title": "Conversation record",
+              "text": "One logged conversation as delivered by its source collection. Records are counted as delivered, including those whose text repeats another record."
+            },
+            {
+              "tag": "Definition",
+              "title": "Distinct exact dialogue",
+              "text": "A unique sequence of roles and message text. Records match only when every role and every character agrees, so paraphrases and near-duplicates stay separate."
+            },
+            {
+              "tag": "Definition",
+              "title": "Repeated-content group",
+              "text": "Two or more records with identical roles and dialogue text. Each member is a separately logged record; the group is not by itself a sign of a collection error."
+            },
+            {
+              "tag": "Definition",
+              "title": "Blank message",
+              "text": "A message whose text field is empty. In ShareChat, a blank `plain_text` field can sit beside content held in another field."
+            }
+          ]
+        },
+        {
+          "type": "bullets",
+          "title": "What reading the content showed",
+          "items": [
+            "Natural user requests sit alongside code, testing-style prompts, long pasted documents, generated marketing copy and unrelated topic shifts within a conversation.",
+            "Conversations labelled English sometimes include other languages.",
+            "Records cannot be assumed to represent clean, independent consumer decision processes."
+          ]
+        },
+        {
+          "type": "callout",
+          "title": "What this data ==does not== support",
+          "text": "The available data supports exact text and structure measurements. It does not support a percentage of genuine human conversations, consumer intent or recommendation accuracy without a defensible annotation protocol."
+        },
+        {
+          "type": "note",
+          "label": "Manual review status",
+          "text": "A sample of 35 conversations was prepared for human judgement of language, natural usage, consumer relevance and context completeness. The annotations were not completed, so no results from that sample appear in this report, and there is no verified dataset-wide consumer-relevance percentage."
+        }
+      ]
+    },
+    {
+      "id": "s4-profiles",
+      "nav": "4 · Profiles",
+      "eyebrow": "Section 4 · Dataset profiles: length, language, models, dates and location",
+      "title": "Each collection captures a ==different slice== of AI use, and only some metadata compares safely",
+      "lead": "Research question: what kinds of interactions do the collections contain, and which metadata can be compared safely?",
+      "blocks": [
+        {
+          "type": "table",
+          "title": "Figure 4.1 · Collection profiles side by side",
+          "columns": [
+            {
+              "key": "m",
+              "label": "Measure"
+            },
+            {
+              "key": "w",
+              "label": "WildChat"
+            },
+            {
+              "key": "l",
+              "label": "LMSYS Chat 1M"
+            },
+            {
+              "key": "s",
+              "label": "ShareChat"
+            }
+          ],
+          "rows": [
+            {
+              "m": "Conversation records",
+              "w": "3,199,860",
+              "l": "1,000,000",
+              "s": "129,584"
+            },
+            {
+              "m": "Average user turns",
+              "w": "1.61",
+              "l": "2.02",
+              "s": "Differs by platform"
+            },
+            {
+              "m": "Median user turns",
+              "w": "1",
+              "l": "1",
+              "s": "Not reported"
+            },
+            {
+              "m": "90th percentile user turns",
+              "w": "3",
+              "l": "4",
+              "s": "Not reported"
+            },
+            {
+              "m": "Maximum user turns",
+              "w": "500",
+              "l": "215",
+              "s": "Not reported"
+            },
+            {
+              "m": "Multi-turn conversations",
+              "w": "526,607",
+              "l": "334,319",
+              "s": "Reported by platform (Figure 4.3)"
+            },
+            {
+              "m": "English-labelled conversations",
+              "w": "1,679,371",
+              "l": "777,453",
+              "s": "Subset is language-filtered"
+            },
+            {
+              "m": "Median message length",
+              "w": "User 198 characters; assistant 797",
+              "l": "Not reported",
+              "s": "Platform-specific; not directly comparable"
+            },
+            {
+              "m": "Dates",
+              "w": "9 April 2023 to 31 July 2025",
+              "l": "No conversation date field",
+              "s": "Varies by platform"
+            },
+            {
+              "m": "Country",
+              "w": "Present on 2,982,491 records",
+              "l": "No geography field",
+              "s": "No U.S. geographic field"
+            },
+            {
+              "m": "Models",
+              "w": "Model labels present",
+              "l": "Includes earlier experimental systems",
+              "s": "Varies by platform"
+            }
+          ],
+          "caption": "WildChat message lengths: exceptionally long pasted prompts pull the mean well above the median, so medians are reported. Because of its earlier experimental models, LMSYS cannot be treated as a contemporary cross-platform user sample."
+        },
+        {
+          "type": "bars",
+          "title": "Figure 4.2 · Multi-turn conversations as a share of each source's records",
+          "value_width": "70px",
+          "max": 100,
+          "items": [
+            {
+              "label": "WildChat",
+              "value": 16.46,
+              "display": "16.5%"
+            },
+            {
+              "label": "LMSYS Chat 1M",
+              "value": 33.43,
+              "display": "33.4%"
+            },
+            {
+              "label": "ShareChat ChatGPT",
+              "value": 58.72,
+              "display": "58.7%"
+            },
+            {
+              "label": "ShareChat Claude",
+              "value": 57.63,
+              "display": "57.6%"
+            },
+            {
+              "label": "ShareChat Gemini",
+              "value": 44.04,
+              "display": "44.0%"
+            },
+            {
+              "label": "ShareChat Grok",
+              "value": 47.01,
+              "display": "47.0%"
+            },
+            {
+              "label": "ShareChat Perplexity",
+              "value": 37.77,
+              "display": "37.8%"
+            }
+          ],
+          "caption": "Shares compare interaction length within each source. Collection mechanisms differ, so they are not evidence of how people use one product versus another. Numerators and denominators are in Figure 4.3."
+        },
+        {
+          "type": "table",
+          "title": "Figure 4.3 · Multi-turn counts behind Figure 4.2",
+          "columns": [
+            {
+              "key": "s",
+              "label": "Source"
+            },
+            {
+              "key": "r",
+              "label": "Conversations",
+              "kind": "num"
+            },
+            {
+              "key": "m",
+              "label": "Multi-turn",
+              "kind": "num"
+            },
+            {
+              "key": "p",
+              "label": "Multi-turn ÷ conversations",
+              "kind": "num"
+            }
+          ],
+          "rows": [
+            {
+              "s": "WildChat",
+              "r": "3,199,860",
+              "m": "526,607",
+              "p": "16.5%"
+            },
+            {
+              "s": "LMSYS Chat 1M",
+              "r": "1,000,000",
+              "m": "334,319",
+              "p": "33.4%"
+            },
+            {
+              "s": "ShareChat ChatGPT",
+              "r": "94,086",
+              "m": "55,244",
+              "p": "58.7%"
+            },
+            {
+              "s": "ShareChat Claude",
+              "r": "911",
+              "m": "525",
+              "p": "57.6%"
+            },
+            {
+              "s": "ShareChat Gemini",
+              "r": "6,826",
+              "m": "3,006",
+              "p": "44.0%"
+            },
+            {
+              "s": "ShareChat Grok",
+              "r": "13,149",
+              "m": "6,182",
+              "p": "47.0%"
+            },
+            {
+              "s": "ShareChat Perplexity",
+              "r": "14,612",
+              "m": "5,519",
+              "p": "37.8%"
+            }
+          ],
+          "caption": "Source tables: part1_dataset_overview.csv, part1_sharechat_platforms.csv."
+        },
+        {
+          "type": "bars",
+          "title": "Figure 4.4 · WildChat U.S. coverage: nested subsets",
+          "value_width": "150px",
+          "items": [
+            {
+              "label": "All WildChat records",
+              "value": 3199860,
+              "display": "3,199,860 · 100.0%",
+              "tone": ""
+            },
+            {
+              "label": "Country label present",
+              "value": 2982491,
+              "display": "2,982,491 · 93.2%",
+              "tone": ""
+            },
+            {
+              "label": "U.S. country label",
+              "value": 944046,
+              "display": "944,046 · 29.5%",
+              "tone": ""
+            },
+            {
+              "label": "U.S. and English-labelled",
+              "value": 581600,
+              "display": "581,600 · 18.2%",
+              "tone": ""
+            },
+            {
+              "label": "U.S., English-labelled, multi-turn",
+              "value": 53632,
+              "display": "53,632 · 1.7%",
+              "tone": "warn"
+            }
+          ],
+          "caption": "Each bar is a subset of the one above it, not an independent population. Percentages use all 3,199,860 WildChat records as the denominator. Country is IP-derived metadata and may be missing; language labels were not independently verified. Multi-turn here means at least two user turns. Source table: part1_us_consumer_topic_coverage.csv, WildChat rows."
+        },
+        {
+          "type": "table",
+          "title": "Figure 4.5 · Where dates exist",
+          "columns": [
+            {
+              "key": "s",
+              "label": "Source"
+            },
+            {
+              "key": "st",
+              "label": "Status",
+              "kind": "sev"
+            },
+            {
+              "key": "d",
+              "label": "Observed period or definition"
+            }
+          ],
+          "rows": [
+            {
+              "s": "WildChat",
+              "st": "Observed",
+              "d": "9 April 2023 to 31 July 2025"
+            },
+            {
+              "s": "LMSYS Chat 1M",
+              "st": "Not available",
+              "d": "No conversation date in the examined schema"
+            },
+            {
+              "s": "ShareChat ChatGPT",
+              "st": "Partial",
+              "d": "Date fields present, with some anomalous future timestamps"
+            },
+            {
+              "s": "ShareChat Claude",
+              "st": "Not available",
+              "d": "No usable date column"
+            },
+            {
+              "s": "ShareChat Gemini",
+              "st": "Partial",
+              "d": "Created and published dates, partly available"
+            },
+            {
+              "s": "ShareChat Grok",
+              "st": "Unconfirmed",
+              "d": "Not documented in this phase"
+            },
+            {
+              "s": "ShareChat Perplexity",
+              "st": "Differently defined",
+              "d": "`last_updated` only, not a conversation creation date"
+            }
+          ],
+          "caption": "No comparative time series is drawn, because outside WildChat dates are missing or defined differently."
+        },
+        {
+          "type": "note",
+          "label": "Metadata is observational",
+          "text": "Language labels and country metadata are observational metadata, not independently validated identities or residency. ShareChat and LMSYS do not supply the U.S. geographic field needed for a U.S.-only denominator. The collections were gathered by different mechanisms, so differences between source totals are not differences in market share, consumer preference or AI product popularity."
+        }
+      ]
+    },
+    {
+      "id": "s5-citations",
+      "nav": "5 · Citations",
+      "eyebrow": "Section 5 · AI citations, reference links and structured sources",
+      "title": "URL-like text is a weak signal; ==structured source fields== exist only for Grok and Perplexity",
+      "lead": "Research question: can these conversations support research on AI citations and source visibility?",
+      "blocks": [
+        {
+          "type": "table",
+          "title": "Figure 5.1 · Candidate link patterns in AI responses",
+          "columns": [
+            {
+              "key": "s",
+              "label": "Source"
+            },
+            {
+              "key": "a",
+              "label": "AI responses",
+              "kind": "num"
+            },
+            {
+              "key": "u",
+              "label": "With URL pattern",
+              "kind": "num"
+            },
+            {
+              "key": "p",
+              "label": "URL pattern ÷ responses",
+              "kind": "num"
+            },
+            {
+              "key": "m",
+              "label": "Markdown link pattern",
+              "kind": "num"
+            },
+            {
+              "key": "b",
+              "label": "Numbered brackets",
+              "kind": "num"
+            }
+          ],
+          "rows": [
+            {
+              "s": "WildChat",
+              "a": "5,167,182",
+              "u": "150,745",
+              "p": "2.92%",
+              "m": "41,396",
+              "b": "90,192"
+            },
+            {
+              "s": "LMSYS",
+              "a": "2,015,645",
+              "u": "18,095",
+              "p": "0.90%",
+              "m": "1,556",
+              "b": "16,360"
+            },
+            {
+              "s": "ShareChat ChatGPT",
+              "a": "487,347",
+              "u": "1,885",
+              "p": "0.39%",
+              "m": "6",
+              "b": "6,656"
+            },
+            {
+              "s": "ShareChat Claude",
+              "a": "4,182",
+              "u": "24",
+              "p": "0.57%",
+              "m": "0",
+              "b": "60"
+            },
+            {
+              "s": "ShareChat Gemini",
+              "a": "33,834",
+              "u": "42",
+              "p": "0.12%",
+              "m": "0",
+              "b": "383"
+            },
+            {
+              "s": "ShareChat Grok",
+              "a": "49,412",
+              "u": "284",
+              "p": "0.57%",
+              "m": "2",
+              "b": "676"
+            },
+            {
+              "s": "ShareChat Perplexity",
+              "a": "24,297",
+              "u": "48",
+              "p": "0.20%",
+              "m": "0",
+              "b": "127"
+            }
+          ],
+          "caption": "Every column counts candidate link patterns, not confirmed citations. Numbered brackets such as [1] also match programming syntax, array indexing and model output; Markdown links include developer documentation and localhost services. Source table: part1_citation_text_patterns.csv."
+        },
+        {
+          "type": "bars",
+          "title": "Figure 5.2 · Share of AI responses containing a URL-like string",
+          "value_width": "70px",
+          "max": 0.029173541787380432,
+          "items": [
+            {
+              "label": "WildChat",
+              "value": 0.029173541787380432,
+              "display": "2.92%"
+            },
+            {
+              "label": "LMSYS",
+              "value": 0.00897727526424544,
+              "display": "0.90%"
+            },
+            {
+              "label": "ShareChat ChatGPT",
+              "value": 0.0038678805861121542,
+              "display": "0.39%"
+            },
+            {
+              "label": "ShareChat Claude",
+              "value": 0.005738880918220947,
+              "display": "0.57%"
+            },
+            {
+              "label": "ShareChat Gemini",
+              "value": 0.001241354850150736,
+              "display": "0.12%"
+            },
+            {
+              "label": "ShareChat Grok",
+              "value": 0.005747591678134866,
+              "display": "0.57%"
+            },
+            {
+              "label": "ShareChat Perplexity",
+              "value": 0.0019755525373502903,
+              "display": "0.20%"
+            }
+          ],
+          "caption": "Candidate link patterns only. For Grok and Perplexity these text patterns are counted separately from their structured source fields below."
+        },
+        {
+          "type": "table",
+          "title": "Figure 5.3 · Structured source fields: Grok and Perplexity",
+          "columns": [
+            {
+              "key": "m",
+              "label": "Measure"
+            },
+            {
+              "key": "g",
+              "label": "Grok"
+            },
+            {
+              "key": "p",
+              "label": "Perplexity"
+            }
+          ],
+          "rows": [
+            {
+              "m": "**Primary source type**",
+              "g": "**Source panel**",
+              "p": "**Inline citation**"
+            },
+            {
+              "m": "AI responses",
+              "g": "49,412",
+              "p": "24,297"
+            },
+            {
+              "m": "Responses with primary sources",
+              "g": "14,446 of 49,412 (29.2%)",
+              "p": "13,486 of 24,297 (55.5%)"
+            },
+            {
+              "m": "Conversations with primary sources",
+              "g": "7,838 of 13,149",
+              "p": "8,342 of 14,612"
+            },
+            {
+              "m": "Primary source URL entries",
+              "g": "322,958",
+              "p": "51,257 valid"
+            },
+            {
+              "m": "Distinct primary source URLs",
+              "g": "229,539",
+              "p": "44,938"
+            },
+            {
+              "m": "**Secondary type**",
+              "g": "**Response hyperlinks**",
+              "p": "**Source bar items**"
+            },
+            {
+              "m": "Responses with secondary links or sources",
+              "g": "5,514 of 49,412 (11.2%)",
+              "p": "15,006 of 24,297 (61.8%)"
+            },
+            {
+              "m": "Secondary entries",
+              "g": "60,677 hyperlink URL entries",
+              "p": "151,242 source-bar items"
+            }
+          ],
+          "caption": "Percentages use each platform's AI responses as the denominator. One further Perplexity source entry lacked a valid URL and is excluded. Source-bar items are not added to inline citation totals, and source-panel entries are not counted as inline citations. Source table: part1_structured_sources.csv."
+        },
+        {
+          "type": "cards",
+          "title": "Figure 5.4 · Four kinds of source reference, kept apart",
+          "columns": 2,
+          "items": [
+            {
+              "tag": "Perplexity",
+              "title": "Cited source (inline citation)",
+              "text": "A URL that the dataset authors record as cited inline in the answer. 51,257 valid entries across 13,486 responses."
+            },
+            {
+              "tag": "Grok",
+              "title": "Source panel",
+              "text": "URLs listed in a panel attached to the response. 322,958 entries across 14,446 responses. An entry in the panel is not automatically an inline citation."
+            },
+            {
+              "tag": "Perplexity",
+              "title": "Related source result (source bar)",
+              "text": "Items in the broader source bar shown with an answer. 151,242 items across 15,006 responses; not all are cited inline."
+            },
+            {
+              "tag": "All collections",
+              "title": "Text URL candidate",
+              "text": "Any URL-like string found by scanning response text, such as the 150,745 WildChat responses that contain one. A candidate is not a confirmed citation."
+            }
+          ]
+        },
+        {
+          "type": "skyband",
+          "title": "These fields show ==availability==, not influence",
+          "text": "Nothing measured here shows whether a linked page is accurate, live, influential, independently verified or causally responsible for an answer."
+        }
+      ]
+    },
+    {
+      "id": "s6-schema",
+      "nav": "6 · Schema",
+      "eyebrow": "Section 6 · Unified schema and cross-platform comparability",
+      "title": "A shared, source-aware message structure is ==feasible==, provided the differences stay visible",
+      "lead": "Research question: can the collections be analyzed together without erasing essential differences?",
+      "blocks": [
+        {
+          "type": "callout",
+          "title": "Sample-level compatibility, ==not a finished unified dataset==",
+          "text": "A real-record compatibility check inspected message roles, identifiers and ordering across WildChat, LMSYS and all five ShareChat platform files. All sampled messages mapped to a common message-level structure. This does not prove that a fully transformed unified dataset already exists."
+        },
+        {
+          "type": "table",
+          "title": "Figure 6.1 · Common analytical fields",
+          "columns": [
+            {
+              "key": "f",
+              "label": "Field",
+              "kind": "mono"
+            },
+            {
+              "key": "h",
+              "label": "Holds"
+            },
+            {
+              "key": "n",
+              "label": "Handling"
+            }
+          ],
+          "rows": [
+            {
+              "f": "source",
+              "h": "The collection: WildChat, LMSYS Chat 1M or ShareChat",
+              "n": "Always recorded"
+            },
+            {
+              "f": "platform",
+              "h": "The ShareChat platform file a conversation came from",
+              "n": "Keeps the five ShareChat platforms distinguishable"
+            },
+            {
+              "f": "conversation_id",
+              "h": "A stable conversation identifier",
+              "n": "WildChat uses the first-turn identifier, not the content hash; ShareChat uses the shared conversation URL"
+            },
+            {
+              "f": "message_position",
+              "h": "The order of the message within its conversation",
+              "n": "Recorded ordering, preferred over declared turn counts"
+            },
+            {
+              "f": "role",
+              "h": "`user` or `assistant`",
+              "n": "ShareChat's `llm` role is normalised to `assistant`"
+            },
+            {
+              "f": "message_text",
+              "h": "The message text",
+              "n": "Blank text is flagged, alongside any alternative content fields"
+            },
+            {
+              "f": "model",
+              "h": "The model label where supplied",
+              "n": "Unavailable for Claude; some Grok values encode roles"
+            },
+            {
+              "f": "language",
+              "h": "The language label",
+              "n": "Observational; 5,222 missing in ShareChat"
+            },
+            {
+              "f": "date",
+              "h": "The date as defined by its source",
+              "n": "A last-updated date stays labelled as such, never as creation time"
+            },
+            {
+              "f": "country",
+              "h": "The country label",
+              "n": "WildChat only; IP-derived"
+            },
+            {
+              "f": "source_reference_type",
+              "h": "The kind of source reference attached",
+              "n": "Inline citation, source panel, source bar, response hyperlink and text URL candidate kept distinct"
+            },
+            {
+              "f": "quality_flags",
+              "h": "Known issues on the record",
+              "n": "For example blank text, repeated content and ordering anomalies"
+            }
+          ]
+        },
+        {
+          "type": "table",
+          "title": "Figure 6.2 · Schema crosswalk by collection",
+          "columns": [
+            {
+              "key": "e",
+              "label": "Element"
+            },
+            {
+              "key": "w",
+              "label": "WildChat"
+            },
+            {
+              "key": "l",
+              "label": "LMSYS Chat 1M"
+            },
+            {
+              "key": "s",
+              "label": "ShareChat"
+            }
+          ],
+          "rows": [
+            {
+              "e": "**Conversation**",
+              "w": "Conversation record with a first-turn identifier; the content hash is not an ID",
+              "l": "Conversation record",
+              "s": "Message rows grouped by shared conversation URL"
+            },
+            {
+              "e": "**Message**",
+              "w": "Ordered messages within the record",
+              "l": "Ordered messages within the record",
+              "s": "One CSV row per message"
+            },
+            {
+              "e": "**Role**",
+              "w": "`user` / `assistant`",
+              "l": "`user` / `assistant`",
+              "s": "`user` / `llm`, normalised to `assistant`"
+            },
+            {
+              "e": "**Date**",
+              "w": "9 April 2023 to 31 July 2025",
+              "l": "**Unavailable**",
+              "s": "Varies by platform; Perplexity `last_updated` is not creation time"
+            },
+            {
+              "e": "**Country**",
+              "w": "IP-derived label",
+              "l": "**Unavailable**",
+              "s": "**Unavailable**"
+            },
+            {
+              "e": "**Model**",
+              "w": "Model labels",
+              "l": "Includes earlier experimental systems",
+              "s": "Partial; none for Claude"
+            },
+            {
+              "e": "**Language**",
+              "w": "Labels",
+              "l": "Labels",
+              "s": "Labels, 5,222 missing; subset language-filtered"
+            },
+            {
+              "e": "**Reference metadata**",
+              "w": "Text URL candidates only",
+              "l": "Text URL candidates only",
+              "s": "Grok: source panel and hyperlinks. Perplexity: inline citations and source bar. Others: text URL candidates only"
+            }
+          ],
+          "caption": "The crosswalk shows data compatibility. It does not imply that the collections were sampled the same way."
+        },
+        {
+          "type": "bullets",
+          "title": "Distinctions the schema must preserve",
+          "items": [
+            "A WildChat dialogue-content hash is not a unique record ID; a stable first-turn identifier was checked.",
+            "LMSYS lacks location and date metadata.",
+            "ShareChat CSV rows represent individual messages, grouped into conversations by their shared conversation URLs.",
+            "A date that records a last update is never silently treated as a creation time.",
+            "Only certain platforms supply structured citation fields.",
+            "The collections can be compared through a common schema but cannot be presented as a single random sample of all AI users."
+          ]
+        },
+        {
+          "type": "note",
+          "label": "Evidence for this section",
+          "text": "Source coverage comes from part1_dataset_overview.csv and part1_sharechat_platforms.csv. No standalone row-level unified-schema table was created in this phase."
+        }
+      ]
+    },
+    {
+      "id": "s7-suitability",
+      "nav": "7 · Suitability",
+      "eyebrow": "Section 7 · Final comparison and suitability for consumer-brand research",
+      "title": "Useful for studying ==observed brand language== within each source, not for measuring the market",
+      "lead": "Research question: how useful are the collections for subsequent brand studies, and what are the measurable limits?",
+      "blocks": [
+        {
+          "type": "scorecards",
+          "items": [
+            {
+              "value": "4,329,444",
+              "label": "Observed conversation records",
+              "sub": "the available corpus, not all AI interactions"
+            },
+            {
+              "value": "3,956,823",
+              "label": "Distinct exact dialogue sequences",
+              "sub": "by content fingerprint comparison",
+              "tone": "good"
+            },
+            {
+              "value": "53,632",
+              "label": "WildChat U.S. English multi-turn",
+              "sub": "supports a geographic filter, not verified identity"
+            },
+            {
+              "value": "6,817",
+              "label": "ShareChat conversations, two selected labels",
+              "sub": "a minimum count, not all consumer conversations"
+            }
+          ]
+        },
+        {
+          "type": "composition",
+          "title": "Figure 7.1 · Share of the 4,329,444 observed records, by collection",
+          "items": [
+            {
+              "label": "WildChat",
+              "value": 3199860,
+              "display": "3,199,860 (73.9%)",
+              "color": "ink"
+            },
+            {
+              "label": "LMSYS Chat 1M",
+              "value": 1000000,
+              "display": "1,000,000 (23.1%)",
+              "color": "sky"
+            },
+            {
+              "label": "ShareChat",
+              "value": 129584,
+              "display": "129,584 (3.0%)",
+              "color": "lime"
+            }
+          ],
+          "caption": "Reflects how each collection was gathered, not market share or product popularity."
+        },
+        {
+          "type": "table",
+          "title": "Figure 7.2 · The three collections compared",
+          "columns": [
+            {
+              "key": "c",
+              "label": "Collection"
+            },
+            {
+              "key": "r",
+              "label": "Records",
+              "kind": "num"
+            },
+            {
+              "key": "d",
+              "label": "Distinct exact sequences",
+              "kind": "num"
+            },
+            {
+              "key": "m",
+              "label": "Multi-turn",
+              "kind": "num"
+            },
+            {
+              "key": "g",
+              "label": "U.S. field"
+            },
+            {
+              "key": "s",
+              "label": "Structured source fields"
+            }
+          ],
+          "rows": [
+            {
+              "c": "WildChat",
+              "r": "3,199,860",
+              "d": "2,869,082",
+              "m": "526,607",
+              "g": "Yes, IP-derived",
+              "s": "None"
+            },
+            {
+              "c": "LMSYS Chat 1M",
+              "r": "1,000,000",
+              "d": "960,713",
+              "m": "334,319",
+              "g": "None",
+              "s": "None"
+            },
+            {
+              "c": "ShareChat",
+              "r": "129,584",
+              "d": "127,579",
+              "m": "By platform",
+              "g": "None",
+              "s": "Grok and Perplexity only"
+            }
+          ],
+          "caption": "ShareChat multi-turn counts are reported per platform in Figure 4.3."
+        },
+        {
+          "type": "proof",
+          "title": "Figure 7.3 · WildChat U.S. English multi-turn funnel",
+          "items": [
+            {
+              "value": "3,199,860",
+              "label": "WildChat records"
+            },
+            {
+              "value": "944,046",
+              "label": "U.S. country label"
+            },
+            {
+              "value": "581,600",
+              "label": "Also English-labelled"
+            },
+            {
+              "value": "53,632",
+              "label": "Also multi-turn"
+            }
+          ],
+          "caption": "Nested subsets. They support a geographic filter but do not establish verified consumer identity or intent."
+        },
+        {
+          "type": "stacked",
+          "title": "Figure 7.4 · ShareChat conversations with the two selected topic labels, by platform",
+          "normalize": true,
+          "value_width": "80px",
+          "legend": [
+            {
+              "label": "Purchasable products only",
+              "color": "ink"
+            },
+            {
+              "label": "Both labels",
+              "color": "lime"
+            },
+            {
+              "label": "Health, fitness, beauty or self-care only",
+              "color": "sky"
+            }
+          ],
+          "rows": [
+            {
+              "label": "All five platforms",
+              "segments": [
+                2607,
+                224,
+                3986
+              ],
+              "display": "6,817"
+            },
+            {
+              "label": "ChatGPT",
+              "segments": [
+                1724,
+                164,
+                2860
+              ],
+              "display": "4,748"
+            },
+            {
+              "label": "Perplexity",
+              "segments": [
+                403,
+                3,
+                481
+              ],
+              "display": "887"
+            },
+            {
+              "label": "Grok",
+              "segments": [
+                390,
+                47,
+                399
+              ],
+              "display": "836"
+            },
+            {
+              "label": "Gemini",
+              "segments": [
+                83,
+                9,
+                230
+              ],
+              "display": "322"
+            },
+            {
+              "label": "Claude",
+              "segments": [
+                7,
+                1,
+                16
+              ],
+              "display": "24"
+            }
+          ],
+          "caption": "Each bar shows the make-up of that platform's union; the figure on the right is the deduplicated union. The overlap is shown so that the two label populations are not simply added together."
+        },
+        {
+          "type": "table",
+          "title": "Figure 7.5 · Topic-label counts behind Figure 7.4",
+          "columns": [
+            {
+              "key": "p",
+              "label": "Platform"
+            },
+            {
+              "key": "a",
+              "label": "Purchasable products",
+              "kind": "num"
+            },
+            {
+              "key": "h",
+              "label": "Health, fitness, beauty or self-care",
+              "kind": "num"
+            },
+            {
+              "key": "b",
+              "label": "Both",
+              "kind": "num"
+            },
+            {
+              "key": "e",
+              "label": "Either (union)",
+              "kind": "num"
+            }
+          ],
+          "rows": [
+            {
+              "p": "**All five platforms**",
+              "a": "2,831",
+              "h": "4,210",
+              "b": "224",
+              "e": "6,817"
+            },
+            {
+              "p": "ChatGPT",
+              "a": "1,888",
+              "h": "3,024",
+              "b": "164",
+              "e": "4,748"
+            },
+            {
+              "p": "Perplexity",
+              "a": "406",
+              "h": "484",
+              "b": "3",
+              "e": "887"
+            },
+            {
+              "p": "Grok",
+              "a": "437",
+              "h": "446",
+              "b": "47",
+              "e": "836"
+            },
+            {
+              "p": "Gemini",
+              "a": "92",
+              "h": "239",
+              "b": "9",
+              "e": "322"
+            },
+            {
+              "p": "Claude",
+              "a": "8",
+              "h": "17",
+              "b": "1",
+              "e": "24"
+            }
+          ],
+          "caption": "Union = products + health − both; across all platforms, 2,831 + 4,210 − 224 = 6,817. A conversation counts when at least one user message carries the label. These labels are not human-validated and can change across messages within a conversation. Source table: part1_us_consumer_topic_coverage.csv."
+        },
+        {
+          "type": "table",
+          "title": "Figure 7.6 · Suitability matrix",
+          "columns": [
+            {
+              "key": "d",
+              "label": "Dimension"
+            },
+            {
+              "key": "w",
+              "label": "WildChat",
+              "kind": "sev"
+            },
+            {
+              "key": "l",
+              "label": "LMSYS",
+              "kind": "sev"
+            },
+            {
+              "key": "s",
+              "label": "ShareChat",
+              "kind": "sev"
+            },
+            {
+              "key": "e",
+              "label": "Evidence"
+            }
+          ],
+          "rows": [
+            {
+              "d": "Geography",
+              "w": "Available",
+              "l": "Not available",
+              "s": "Not available",
+              "e": "WildChat country label on 2,982,491 records, IP-derived (Section 4)."
+            },
+            {
+              "d": "Time",
+              "w": "Available",
+              "l": "Not available",
+              "s": "Partial",
+              "e": "WildChat 9 April 2023 to 31 July 2025; ShareChat dates vary by platform and definition (Sections 2 and 4)."
+            },
+            {
+              "d": "Model",
+              "w": "Available",
+              "l": "Available",
+              "s": "Partial",
+              "e": "LMSYS includes earlier experimental systems; Claude has no model column; some Grok values encode roles (Sections 2 and 4)."
+            },
+            {
+              "d": "Citation source fields",
+              "w": "Not available",
+              "l": "Not available",
+              "s": "Partial",
+              "e": "Text URL candidates only, except Grok source panels and Perplexity inline citations (Section 5)."
+            },
+            {
+              "d": "Role structure",
+              "w": "Available",
+              "l": "Available",
+              "s": "Partial",
+              "e": "Sampled messages from all sources mapped to a common structure; ShareChat has ordering anomalies and 2,204 ChatGPT turn-count mismatches (Sections 2 and 6)."
+            },
+            {
+              "d": "Conversation quality",
+              "w": "Partial",
+              "l": "Partial",
+              "s": "Partial",
+              "e": "Repeated content, blank text and mixed content types in every source (Sections 1 to 3)."
+            }
+          ],
+          "caption": "Available: the field exists and was checked. Partial: present for some records, platforms or definitions. Not available: absent from the examined data."
+        },
+        {
+          "type": "callout",
+          "title": "What the corpus supports, and ==what it does not==",
+          "text": "It supports studying observed brand language, AI introductions, references and conversation length within each source. It does not establish purchases, customer conversions, independent user populations or statistical trends in the general AI market."
+        },
+        {
+          "type": "cards",
+          "title": "Not completed in this phase",
+          "columns": 3,
+          "items": [
+            {
+              "tag": "Not performed",
+              "title": "Human validation of intent",
+              "text": "Systematic human validation of sampled conversation intent. The 35-conversation review was prepared but not completed."
+            },
+            {
+              "tag": "Not performed",
+              "title": "Semantic topic percentages",
+              "text": "Reliable semantic topic percentages across the entire corpus."
+            },
+            {
+              "tag": "Not performed",
+              "title": "Controlled statistical study",
+              "text": "A controlled study connecting intent to conversation length or to recommendation outcomes."
+            }
+          ]
+        },
+        {
+          "type": "skyband",
+          "title": "What this report does not claim",
+          "text": "Identical dialogue content is not a data-collection mistake. A country label is not verified citizenship or consumer location. A URL is not a confirmed AI citation. A topic label is not proven purchasing intent. AI-generated brand or commercial claims are not treated as correct without external verification."
+        }
+      ]
+    }
+  ]
+}
+</script>
+
+<!-- ============================ RENDERER (no need to edit) ============================ -->
+<script>
+(function () {
+  var LOGO = "<svg role=\"img\" aria-label=\"WLDM\" xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 192.667 56.652\" height=\"32\" style=\"display:block;width:auto\" > <g> <path d=\"M24.201,29.237s0,0,0,.002c-.002-.004-.004-.007-.007-.01-.006-.007-.008-.009.006.008\" fill=\"#2a2b29\" stroke-width=\"0\" /> <path d=\"M44.009,31.761c-.78.574-1.634,1.05-2.467,1.55-1.39.836-2.968,1.782-4.633,2.778-3.224,1.775-19.742,10.316-20.936,10.919-4.072,2.057-6.375.766-7.245-2.338-.313-1.121-.37-2.319-.496-3.487-.244-2.25-.457-4.504-.676-6.757-.217-2.219-.428-4.439-.639-6.659-.394-4.132-.787-8.264-1.18-12.396-.068-.717-.134-1.434-.174-1.86.059-1.247.293-2.141.825-2.949,1.101-1.673,3.129-2.326,5.077-1.525,1.457.598,2.869,1.307,4.292,1.986,3.982,1.9,7.964,3.798,11.935,5.718,3.703,1.792,7.392,3.612,11.09,5.416,1.417.691,2.462,1.729,2.862,3.276.539,2.081-.122,3.838-1.735,5.187-.97.81-2.067,1.468-3.114,2.186-2.814,1.928-13.501,8.263-16.105,9.748-.645.368-3.065,1.774-3.839,1.865-1.513.179-2.88-.557-3.65-1.92-.538-.952-.682-2.001-.844-3.053-.565-3.684-1.142-7.366-1.707-11.051-.527-3.434-1.077-6.865-1.547-10.307-.217-1.592.328-2.941,1.753-3.819,1.081-.666,2.241-.62,3.37-.184,2.643,1.021,5.273,2.077,7.899,3.141,4.373,1.773,8.74,3.562,13.109,5.346,1.612.659,2.654,2.166,2.673,4.119-.019,1.193-.684,2.33-1.792,3.21-2.21,1.756-15.087,10.037-15.245,10.129-1.181.68-2.067,1.01-3.054.406-.79-.484-1.294-1.208-1.505-2.092-.37-1.556-.686-3.124-1.019-4.689-.699-3.285-1.397-6.571-2.089-9.858-.151-.715-.31-1.431-.407-2.154-.208-1.547.773-2.976,2.222-3.284.189-.04.385-.047.662-.079.26.048.608.074.93.177,3.404,1.092,6.803,2.197,10.205,3.295,1.783.575,3.569,1.138,5.35,1.716,1.398.454,2.279,1.675,2.213,3.078-.044.955-.494,1.723-1.186,2.357-2.074,1.899-8.006,5.981-11.405,7.953l.002.027c-.582.201-1.22.053-1.709-.437-.471-.473-.666-1.077-.835-1.701-.866-3.197-1.742-6.391-2.608-9.588-.071-.262-.091-.538-.134-.808.046-1.516,1.192-2.382,2.662-2.032,3.411.812,6.823,1.617,10.241,2.4,1.645.377,2.218,2.18,1.043,3.471-.723.794-3.655,2.659-5.678,4.001-.869.468-1.737.868-1.977.808-.533-.133-.716-.566-.879-1.042-.555-1.619-1.139-3.228-1.706-4.842-.044-.125-.073-.254-.101-.384-.061-.28-.03-.575.109-.826.229-.415.677-.636,1.221-.554,1.851.282,3.702.565,5.552.85.894.138,1.262,1.027.7,1.753-.313.405-2.742,1.697-2.938,1.805-.102.056-.208.115-.32.144-.217.056-.393-.059-.534-.214-.174-.192-.314-.418-.442-.641-.115-.204-.217-.414-.311-.628-.071-.163-.17-.378-.072-.543.083-.139.253-.163.399-.173.055-.004.111-.006.167-.004.369.009.734.054,1.102.089.146.014.255.109.262.262.006.132-.126.275-.262.262-.117-.011-.299-.056-.476-.029-.172.025-.244.108-.203.481.016.144.071.256.135.36.091.147.272.263.764.009.839-.432,1.229-.751,1.43-1.054.27-.405-.139-.825-.605-.884-1.04-.132-2.081-.252-2.922-.352-.751-.046-1.007.267-.924.729.25,1.389.707,2.471,1.116,3.445.16.383.453.506.746.358.939-.488,3.922-1.988,5.287-3.364.939-.947.352-2.286-.947-2.565-1.04-.223-2.082-.431-3.125-.633-1.604-.311-3.208-.619-4.816-.911-1.07-.194-1.895.483-1.928,1.535.054.256.088.518.164.767.758,2.492,1.515,4.984,2.295,7.469.103.328.297.65.524.91.479.552,1.076.462,1.707.099,1.138-.656,4.824-2.997,4.977-3.162,0,0,2.038-1.233,2.715-1.89.508-.493,1.036-.979,1.464-1.537,1.087-1.417.442-3.482-1.21-3.969-1.074-.316-2.152-.614-3.23-.915-3.257-.909-6.512-1.826-9.775-2.708-.438-.118-.938-.141-1.385-.064-1.009.174-1.897,1.123-1.868,2.503.025.227.028.459.079.679.404,1.724.813,3.446,1.229,5.167.607,2.508,1.227,5.014,1.828,7.523.154.643.387,1.238.796,1.764.737.947,1.866,1.01,2.874.352,1.493-.974,9.268-5.778,11.497-7.679.739-.63,1.513-1.236,2.159-1.953.833-.923,1.134-2.046.79-3.287-.386-1.395-1.357-2.182-2.677-2.659-3.106-1.12-6.199-2.278-9.301-3.41-2.78-1.015-5.563-2.021-8.349-3.02-.696-.25-1.417-.375-2.156-.19-1.581.397-2.507,1.632-2.542,3.359.022.228.028.458.068.682.287,1.607.577,3.215.875,4.821.858,4.629,1.724,9.257,2.58,13.887.153.83.388,1.614.905,2.304,1.108,1.479,2.702,1.474,4.332.604,2.212-1.18,10.578-6.194,13.198-7.92,1.671-1.1,3.231-2.362,4.835-3.56,1.187-.887,1.904-2.06,1.998-3.561.122-1.927-.955-3.639-2.795-4.48-2.088-.955-4.177-1.911-6.271-2.856-2.927-1.321-5.855-2.642-8.79-3.944-2.882-1.28-5.77-2.55-8.667-3.798-1.226-.528-2.493-.624-3.709.03-1.541.831-2.13,2.216-2.147,4.127.167,1.371.355,2.96.555,4.547.236,1.881.486,3.761.724,5.642.268,2.121.527,4.244.797,6.365.256,2.019.518,4.037.784,6.055.175,1.325.325,2.655.555,3.971.22,1.261.829,2.328,1.909,3.06,1.366.927,3.508.683,5.045-.199,2.953-1.693,18.973-10.808,23.128-13.477.619-.397,1.234-.857,1.71-1.409,1.33-1.545,1.727-3.325,1.012-5.275-.472-1.286-1.346-2.263-2.549-2.901-3.22-1.709-6.458-3.387-9.689-5.077-2.502-1.308-5-2.624-7.508-3.919-3.138-1.62-6.285-3.223-9.429-4.832-1.211-.619-2.408-1.269-3.64-1.842-1.254-.582-2.567-.762-3.894-.228-1.84.741-3.029,2.719-2.92,4.818.08,1.198.16,2.396.242,3.594.221,3.252.443,6.504.666,9.756.188,2.739.375,5.477.566,8.215.271,3.856.535,7.713.831,11.567.056.723.191,1.454.401,2.147.376,1.244,1.108,2.274,2.252,2.919,1.474.831,2.979.733,4.454-.045,1.501-.791,2.66-1.375,4.051-2.125,2.088-1.126,4.16-2.42,8.571-4.582-.891.534-2.526,1.544-2.526,1.544-.016.01-7.957,4.756-11.903,7.135-2.559,1.543-5.813.56-7.166-2.176-.471-.951-.712-1.954-.749-3.004-.128-3.567-.24-7.134-.358-10.702-.18-5.396-.361-10.792-.538-16.189-.012-.365-.002-.732-.002-1.098h-.028c-.104-3.075-.212-6.15-.309-9.226-.047-1.506.264-2.916,1.255-4.102,1.27-1.521,3.257-2.076,5.116-1.377.808.304,1.578.723,2.339,1.136,4.328,2.353,8.653,4.712,12.972,7.084,4.469,2.453,8.926,4.929,13.394,7.385,1.874,1.029,3.76,2.036,5.642,3.05,1.48.797,2.583,1.927,3.06,3.571.643,2.213-.193,4.657-2.104,6.064M47.58,24.238c-.703-.936-1.621-1.596-2.626-2.165-2.208-1.251-4.414-2.506-6.609-3.78-4.765-2.766-9.521-5.55-14.285-8.319-4.744-2.759-9.492-5.508-14.239-8.262-.88-.51-1.752-1.028-2.754-1.286C4.751-.168,2.659.738,1.53,2.836c-.597,1.108-.787,2.304-.787,3.543,0,7.025,0,14.05,0,21.075h.003c0,1.018,0,2.036,0,3.055,0,5.972-.007,11.944,0,17.917,0,1.337.175,2.653.823,3.852.926,1.712,2.354,2.635,4.327,2.642,1.203.004,2.29-.411,3.314-.993,1.769-1.006,3.525-2.034,5.284-3.058,3.014-1.756,6.027-3.514,9.041-5.271l.002.014c1.965-1.146,6.533-3.823,8.5-4.968,4.367-2.542,8.738-5.079,13.11-7.613.859-.498,1.635-1.088,2.271-1.857,1.702-2.055,1.763-4.805.162-6.936\" fill=\"#2a2b29\" stroke-width=\"0\" /> <\/g> <g> <polygon points=\"61.717 41.257 53.012 13.911 57.504 13.911 64.54 35.891 64.699 35.891 72.291 13.911 76.623 13.911 84.255 35.891 84.493 35.891 91.21 13.911 95.583 13.911 86.918 41.257 81.83 41.257 74.357 20.23 74.199 20.23 66.805 41.257 61.717 41.257\" fill=\"#2a2b29\" stroke-width=\"0\" /> <polygon points=\"101.704 41.257 101.704 13.911 106.116 13.911 106.116 37.521 120.902 37.521 120.902 41.257 101.704 41.257\" fill=\"#2a2b29\" stroke-width=\"0\" /> <path d=\"M126.903,41.256V13.91h10.176c2.676,0,4.862.106,6.559.318,1.695.212,3.04.603,4.034,1.172.994.57,1.709,1.365,2.146,2.385.437,1.02.722,2.332.855,3.935.133,1.604.199,3.558.199,5.863s-.066,4.26-.199,5.863c-.133,1.603-.418,2.915-.855,3.935s-1.152,1.815-2.146,2.385c-.994.57-2.339.961-4.034,1.172-1.697.213-3.883.318-6.559.318h-10.176ZM131.316,37.6h5.048c1.933,0,3.537-.026,4.809-.08,1.272-.053,2.272-.232,3.002-.536.727-.305,1.258-.815,1.589-1.531.332-.715.542-1.702.636-2.961.093-1.258.14-2.895.14-4.909s-.055-3.65-.16-4.909c-.106-1.258-.325-2.245-.655-2.961-.332-.715-.869-1.226-1.61-1.53-.742-.305-1.743-.484-3.001-.537-1.259-.052-2.842-.08-4.75-.08h-5.048v20.034Z\" fill=\"#2a2b29\" stroke-width=\"0\" /> <polygon points=\"185.453 13.91 175.118 35.135 174.879 35.135 164.465 13.91 158.781 13.91 158.781 41.256 162.954 41.256 162.954 20.429 163.114 20.429 173.17 41.256 176.588 41.256 186.763 20.429 186.882 20.429 186.882 41.256 191.176 41.256 191.176 13.91 185.453 13.91\" fill=\"#2a2b29\" stroke-width=\"0\" /> <\/g> <\/svg>";
+
+  function esc(s) {
+    return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  }
+  // Inline formatting. Everything is escaped first, so HTML in the data is shown as text.
+  function fmt(s, dark) {
+    var t = esc(s);
+    t = t.replace(/`([^`]+)`/g, '<code>$1</code>');
+    t = t.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+    t = t.replace(/==([^=]+)==/g, dark ? '<span class="lime">$1</span>' : '<span class="u-lm">$1</span>');
+    t = t.replace(/\[([^\]]+)\]\((https?:\/\/[^)\s]+)\)/g, '<a href="$2" target="_blank" rel="noreferrer">$1</a>');
+    return t;
+  }
+  function tone(t) { return t === 'good' ? 'good' : (t === 'warn' ? 'warn' : ''); }
+  var COLORS = { ink: 'var(--ink)', sky: 'var(--bl)', lime: 'var(--ny)', muted: 'var(--tp)', warn: 'var(--warn)', good: 'var(--good)' };
+  function color(c) {
+    if (COLORS[c]) return COLORS[c];
+    return /^#[0-9a-fA-F]{3,8}$/.test(String(c)) ? c : 'var(--tp)';
+  }
+  function title(b) { return b.title ? '<h3 class="bt">' + fmt(b.title) + '</h3>' : ''; }
+  function caption(b) { return b.caption ? '<p class="caption">' + fmt(b.caption) + '</p>' : ''; }
+  function rowStyle(b) { return b.value_width ? ' style="grid-template-columns:minmax(120px,280px) 1fr ' + esc(b.value_width) + '"' : ''; }
+  function sum(a) { return (a || []).reduce(function (x, y) { return x + (Number(y) || 0); }, 0); }
+
+  function cell(c, v) {
+    var val = v == null ? '' : v;
+    if (c.kind === 'num') return '<td class="num" style="text-align:right">' + esc(val) + '</td>';
+    if (c.kind === 'mono') return '<td class="num" style="white-space:normal">' + esc(val) + '</td>';
+    if (c.kind === 'sev') return '<td><span class="sev ' + esc(String(val).toLowerCase().replace(/[^a-z]/g, '')) + '">' + esc(val) + '</span></td>';
+    if (c.kind === 'chip') return '<td><span class="classchip">' + esc(val) + '</span></td>';
+    return '<td>' + fmt(val) + '</td>';
+  }
+
+  var BLOCKS = {
+    text: function (b) { return title(b) + (b.paragraphs || []).map(function (p) { return '<p>' + fmt(p) + '</p>'; }).join(''); },
+    bullets: function (b) { return title(b) + '<ul class="clean">' + (b.items || []).map(function (i) { return '<li>' + fmt(i) + '</li>'; }).join('') + '</ul>'; },
+    scorecards: function (b) {
+      return title(b) + '<div class="scorecards">' + (b.items || []).map(function (i) {
+        return '<div class="score"><div class="v ' + tone(i.tone) + '">' + esc(i.value) + '</div><div class="k">' + esc(i.label) + '</div>' + (i.sub ? '<div class="sub">' + fmt(i.sub) + '</div>' : '') + '</div>';
+      }).join('') + '</div>';
+    },
+    proof: function (b) {
+      return '<div class="proof-wrap">' + title(b) + '<div class="proof">' + (b.items || []).map(function (i) {
+        return '<div class="pi"><div class="pv">' + esc(i.value) + '</div><div class="pk">' + esc(i.label) + '</div></div>';
+      }).join('') + '</div>' + caption(b) + '</div>';
+    },
+    table: function (b) {
+      var cols = b.columns || [];
+      var head = cols.map(function (c) { return '<th' + (c.kind === 'num' ? ' style="text-align:right"' : '') + '>' + esc(c.label) + '</th>'; }).join('');
+      var rows = (b.rows || []).map(function (r) { return '<tr>' + cols.map(function (c) { return cell(c, r[c.key]); }).join('') + '</tr>'; }).join('');
+      return title(b) +
+        (b.searchable ? '<input class="search" data-search placeholder="' + esc(b.search_placeholder || 'Filter rows') + '">' : '') +
+        '<div class="tbl-wrap"><table><thead><tr>' + head + '</tr></thead><tbody>' + rows + '</tbody></table></div>' +
+        caption(b);
+    },
+    code: function (b) { return title(b) + (b.label ? '<h4>' + esc(b.label) + '</h4>' : '') + '<pre class="code">' + esc(b.code) + '</pre>' + caption(b); },
+    compare: function (b) {
+      var sides = [[b.left, 'warn'], [b.right, 'good']];
+      return title(b) + '<div class="grid2">' + sides.map(function (p) {
+        var s = p[0]; if (!s) return '';
+        var t = s.tone || p[1];
+        return '<div class="card"><h4 style="color:var(' + (t === 'good' ? '--good' : '--warn') + ')">' + esc(s.label) + '</h4><pre class="code">' + esc(s.code) + '</pre>' + (s.note ? '<p class="caption">' + fmt(s.note) + '</p>' : '') + '</div>';
+      }).join('') + '</div>';
+    },
+    bars: function (b) {
+      var items = b.items || [];
+      var max = b.max || Math.max.apply(null, [1].concat(items.map(function (i) { return Number(i.value) || 0; })));
+      return title(b) + '<div class="hb-wide card">' + items.map(function (i) {
+        var pct = Math.max(0, Math.min(100, (Number(i.value) || 0) / max * 100));
+        return '<div class="hb-row"' + rowStyle(b) + '><div class="hb-label" title="' + esc(i.label) + '">' + esc(i.label) + '</div><div class="hb-track"><div class="hb-fill ' + (i.tone === 'warn' ? 'warn' : '') + '" style="width:' + pct + '%"></div></div><div class="hb-val">' + esc(i.display != null ? i.display : i.value) + '</div></div>';
+      }).join('') + '</div>' + caption(b);
+    },
+    composition: function (b) {
+      var items = b.items || [];
+      return title(b) + '<div class="comp-bar">' + items.map(function (i) {
+        return '<div style="flex:' + (Number(i.value) || 0) + ';background:' + color(i.color) + '" title="' + esc(i.label) + '"></div>';
+      }).join('') + '</div><div class="comp-legend">' + items.map(function (i) {
+        return '<div class="comp-legend-item"><span class="comp-swatch" style="background:' + color(i.color) + '"></span>' + esc(i.label) + ' &middot; ' + esc(i.display != null ? i.display : i.value) + '</div>';
+      }).join('') + '</div>' + caption(b);
+    },
+    stacked: function (b) {
+      var legend = b.legend || [];
+      var rows = b.rows || [];
+      var max = Math.max.apply(null, [1].concat(rows.map(function (r) { return sum(r.segments); })));
+      var key = '<div class="comp-legend tight">' + legend.map(function (l) {
+        return '<div class="comp-legend-item"><span class="comp-swatch" style="background:' + color(l.color) + '"></span>' + esc(l.label) + '</div>';
+      }).join('') + '</div>';
+      return title(b) + key + '<div class="hb-wide card">' + rows.map(function (r) {
+        var total = sum(r.segments);
+        var width = b.normalize ? 100 : total / max * 100;
+        var segs = (r.segments || []).map(function (v, k) {
+          return '<div style="flex:' + (Number(v) || 0) + ';background:' + color(legend[k] && legend[k].color) + '" title="' + esc((legend[k] ? legend[k].label + ': ' : '') + v) + '"></div>';
+        }).join('');
+        return '<div class="hb-row"' + rowStyle(b) + '><div class="hb-label" title="' + esc(r.label) + '">' + esc(r.label) + '</div><div class="hb-track"><div class="st-fill" style="width:' + width + '%">' + segs + '</div></div><div class="hb-val">' + esc(r.display != null ? r.display : total) + '</div></div>';
+      }).join('') + '</div>' + caption(b);
+    },
+    cards: function (b) {
+      var n = Math.max(1, Math.min(4, Number(b.columns) || 3));
+      return title(b) + '<div class="responsive-grid" style="grid-template-columns:repeat(' + n + ',1fr);gap:16px">' + (b.items || []).map(function (i) {
+        return '<div class="card">' + (i.tag ? '<span class="tag">' + esc(i.tag) + '</span>' : '') + '<h3>' + fmt(i.title) + '</h3><p style="font-size:13.5px;margin-bottom:0">' + fmt(i.text) + '</p></div>';
+      }).join('') + '</div>' + caption(b);
+    },
+    note: function (b) { return '<div class="note">' + (b.label ? '<h4>' + esc(b.label) + '</h4>' : '') + fmt(b.text) + '</div>'; },
+    callout: function (b) { return '<div class="callout">' + (b.title ? '<h3>' + fmt(b.title, true) + '</h3>' : '') + '<p style="margin-bottom:0">' + fmt(b.text, true) + '</p></div>'; },
+    skyband: function (b) { return '<div class="skyband">' + (b.title ? '<h2>' + fmt(b.title) + '</h2>' : '') + '<p class="lead" style="margin-bottom:0">' + fmt(b.text) + '</p></div>'; },
+    phases: function (b) {
+      return (b.items || []).map(function (i) {
+        return '<div class="phase"><div class="pn">' + esc(i.label) + '</div><div><h3>' + fmt(i.title) + '</h3><p>' + fmt(i.text) + '</p>' + (i.effort ? '<div class="effort">' + fmt(i.effort) + '</div>' : '') + '</div></div>';
+      }).join('');
+    }
+  };
+
+  function renderBlock(b) {
+    var fn = BLOCKS[b && b.type];
+    var html = fn ? fn(b) : '<div class="note">Unknown block type: <code>' + esc(b && b.type) + '</code>. See the guide at the top of this file.</div>';
+    return '<div class="block">' + html + '</div>';
+  }
+
+  function renderSection(s, i) {
+    var head = (s.eyebrow ? '<div class="eyebrow">' + esc(s.eyebrow) + '</div>' : '') +
+      (s.title ? (s.hero ? '<h1>' + fmt(s.title) + '</h1>' : '<h2>' + fmt(s.title) + '</h2>') : '') +
+      (s.lead ? '<p class="lead">' + fmt(s.lead) + '</p>' : '');
+    var blocks = (s.blocks || []).map(renderBlock).join('');
+    var id = esc(s.id || ('section-' + i));
+    return s.hero
+      ? '<header class="hero" id="' + id + '"><div class="container">' + head + blocks + '</div></header>'
+      : '<section class="section" id="' + id + '"><div class="container">' + head + blocks + '</div></section>';
+  }
+
+  function showError(msg) {
+    document.getElementById('app').innerHTML = '<div class="data-error"><strong>Data error</strong><br>' + esc(msg) + '</div>';
+  }
+
+  var D;
+  try {
+    D = JSON.parse(document.getElementById('report-data').textContent);
+  } catch (e) {
+    showError('The data block is not valid JSON: ' + e.message + '. Check for a missing comma, quote or bracket near the position mentioned.');
+    return;
+  }
+
+  try {
+    var meta = D.meta || {};
+    var sections = D.sections || [];
+    document.title = meta.title || 'Audit Report';
+    if (meta.sample_data) document.body.classList.add('has-sample');
+
+    var navItems = sections.map(function (s, i) { return { id: s.id || ('section-' + i), nav: s.nav }; }).filter(function (x) { return x.nav; });
+    var html = '';
+    if (meta.sample_data) html += '<div class="samplebar">Sample data. Replace the report-data block, then set sample_data to false.</div>';
+    html += '<div class="container"><div class="brandhead">' +
+      (meta.show_logo === false ? '<span></span>' : '<span aria-label="Logo">' + LOGO + '</span>') +
+      '<div class="brandtag">' + esc(meta.brand_tag || '') + (meta.brand_date ? '<br>' + esc(meta.brand_date) : '') + '</div></div></div>';
+    if (navItems.length) {
+      html += '<nav class="navchips" aria-label="Section navigation"><div class="container row">' +
+        navItems.map(function (n) { return '<button class="navchip" data-target="' + esc(n.id) + '">' + esc(n.nav) + '</button>'; }).join('') +
+        '</div></nav>';
+    }
+    html += sections.map(renderSection).join('');
+    if (meta.footer) html += '<footer class="sitefoot"><div class="container">' + fmt(meta.footer) + '</div></footer>';
+    document.getElementById('app').innerHTML = html;
+  } catch (e) {
+    showError('The data is valid JSON but a block is malformed: ' + e.message);
+    return;
+  }
+
+  document.addEventListener('click', function (e) {
+    var t = e.target.closest && e.target.closest('[data-target]');
+    if (!t) return;
+    var el = document.getElementById(t.getAttribute('data-target'));
+    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  });
+  document.addEventListener('input', function (e) {
+    var t = e.target;
+    if (!t.matches || !t.matches('[data-search]')) return;
+    var q = t.value.toLowerCase();
+    var wrap = t.nextElementSibling;
+    if (!wrap) return;
+    wrap.querySelectorAll('tbody tr').forEach(function (tr) { tr.style.display = tr.textContent.toLowerCase().indexOf(q) > -1 ? '' : 'none'; });
+  });
+})();
+</script>
+</body>
+</html>
