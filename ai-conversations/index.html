@@ -1,0 +1,2571 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>Audit Report</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600&family=Roboto+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<!--
+=====================================================================
+HOW TO USE THIS TEMPLATE
+=====================================================================
+1. All content lives in the <script id="report-data"> block as JSON.
+   Edit the text and numbers there. The layout and styling never change.
+2. To save as PDF: browser Print, Save as PDF, turn on "Background graphics".
+3. If the page shows a red "data error" box, the JSON has a typo
+   (usually a missing comma or quote). The message says where.
+
+BLOCK TYPES (each block has "type" plus these fields)
+  text         title, paragraphs: ["...", "..."]
+  bullets      title, items: ["...", "..."]
+  scorecards   items: [{value, label, sub, tone}]      tone = good | warn | (empty)
+  proof        title, caption, items: [{value, label}] dark strip, 4 items work best
+  table        title, caption, searchable (true/false), search_placeholder,
+               columns: [{key, label, kind}]           kind = text | num | sev | chip | mono
+               rows: [{ key: value, ... }]             sev values: High, Medium, Low, OK,
+                                                       Available, Observed, Partial,
+                                                       Differently defined, Not available, Unconfirmed
+  code         label, code                             dark code block
+  compare      left / right: {label, tone, code, note} two code blocks side by side
+  bars         title, caption, max, value_width, items: [{label, value, display, tone}]
+  composition  title, caption, items: [{label, value, display, color}]
+  stacked      title, caption, normalize, legend: [{label, color}],
+               rows: [{label, segments: [n, n, ...], display}]   (added in this version)
+  cards        title, columns (1-4), items: [{tag, title, text}]
+  note         label, text                             lime-edged note
+  callout      title, text                             dark panel
+  skyband      title, text                             blue panel
+  phases       items: [{label, title, text, effort}]   roadmap rows
+  sequence     title, caption, items: [{pos, role, text, mark}]   role = user | assistant | gap
+  flowtree     title, caption, root: {value, label},
+               branches: [{value, label, groups: [{label, value, items: [{label, value, tone}]}]}]
+  transcript   title, label, caption, items: [{n, role, excerpt, parts: [{text} | {omit}]} | {gap}]
+               Verbatim only: message text is escaped and never formatted.
+
+INLINE FORMATTING inside any text: **bold**   `code`   ==lime highlight==   [link text](https://example.com)
+=====================================================================
+-->
+<style>
+:root{
+  --bg:#EEEADE; --surface:#F6F4EC; --ink:#2A2B29; --ny:#E1FF01; --bl:#B8D3D8; --tp:#BFC0B6; --wh:#FFFFFF;
+  --line:#D9D4C5; --muted:#6E6E66; --ink-soft:#55564F; --ink-mute:#7A7B72; --refdom:#5E8C97; --good:#5E7D4F;
+  --warn:#C24E1E;
+  --serif:"TT Lakes Neue","Roboto",system-ui,sans-serif;
+  --head:"TT Lakes Neue Head","TT Lakes Neue",Roboto,sans-serif;
+  --sans:"Roboto",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"Roboto Mono",ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+  color-scheme: light;
+}
+
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+html,body{margin:0;padding:0}
+body{background:var(--bg);color:var(--ink);font-family:var(--sans);font-weight:400;line-height:1.6;-webkit-font-smoothing:antialiased}
+[id]{scroll-margin-top:64px}
+
+.container{max-width:1140px;margin:0 auto;padding:0 30px}
+@media (max-width:820px){.container{padding:0 18px}}
+
+/* ---- brand head ---- */
+.brandhead{display:flex;align-items:center;justify-content:space-between;gap:18px;padding:20px 0}
+.brandhead .logo{height:32px;width:auto;display:block}
+.brandhead .brandtag{font-family:var(--mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);text-align:right;line-height:1.5}
+@media (max-width:560px){.brandhead{flex-direction:column;align-items:flex-start;gap:10px}.brandhead .brandtag{text-align:left}}
+
+/* ---- sticky chip nav ---- */
+.navchips{position:sticky;top:0;z-index:50;background:var(--bg);border-top:1px solid var(--line);border-bottom:1.5px solid var(--line);padding:12px 0}
+.navchips .row{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none}
+.navchips .row::-webkit-scrollbar{display:none}
+.navchip{font-family:var(--mono);font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);border:1px solid var(--line);border-radius:100px;padding:6px 13px;background:var(--bg);white-space:nowrap;cursor:pointer;transition:background .15s ease,color .15s ease,border-color .15s ease}
+.navchip:hover{color:var(--ink);border-color:var(--ink)}
+.navchip:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+
+/* ---- type ---- */
+.eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);display:flex;align-items:center;gap:10px;margin-bottom:14px}
+.eyebrow::before{content:"";width:26px;height:3px;background:var(--ink);display:inline-block;flex-shrink:0}
+h1{font-family:var(--serif);font-weight:400;font-size:clamp(34px,5vw,52px);line-height:1.05;letter-spacing:-.02em;margin:0 0 16px;max-width:24ch;text-wrap:balance}
+h1 em{font-style:italic;font-weight:400}
+h2{font-family:var(--serif);font-weight:400;font-size:clamp(24px,2.8vw,32px);letter-spacing:-.012em;margin:0 0 8px;text-wrap:balance}
+h3{font-family:var(--serif);font-weight:400;font-size:18px;margin:0 0 6px}
+h4{font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin:0 0 10px}
+p{margin:0 0 14px;max-width:74ch}
+a{color:var(--ink)}
+.lead{font-size:17px;color:var(--ink-soft);max-width:70ch}
+.u-lm{background:linear-gradient(transparent 62%,var(--ny) 62%);padding:0 .05em}
+.u-bl{background:linear-gradient(transparent 62%,var(--bl) 62%);padding:0 .05em}
+
+/* ---- pills, tags ---- */
+.tag{display:inline-block;font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);border:1px solid var(--line);border-radius:100px;padding:3px 9px;margin:0 6px 6px 0}
+.classchip{font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;background:var(--ny);color:var(--ink);padding:3px 9px;border-radius:100px;font-weight:600;display:inline-block}
+
+/* ---- layout ---- */
+.hero{padding:34px 0 34px;border-bottom:1.5px solid var(--line)}
+section.section{padding:48px 0;border-bottom:1.5px solid var(--line)}
+section.section:last-of-type{border-bottom:none}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:24px}
+@media (max-width:880px){.grid2{grid-template-columns:1fr}}
+.responsive-grid{display:grid}
+@media (max-width:880px){.responsive-grid{grid-template-columns:1fr !important}}
+
+.card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:22px}
+
+/* ---- score cards ---- */
+.scorecards{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:14px}
+.score{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:16px 16px 14px}
+.score .v{font-family:var(--head);font-weight:600;font-size:clamp(24px,3vw,30px);line-height:1;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+.score .v.warn{color:var(--warn)}
+.score .k{font-family:var(--mono);font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-top:8px}
+.score .sub{font-size:12px;color:var(--ink-soft);margin-top:4px}
+
+/* ---- lists ---- */
+ul.clean{list-style:none;max-width:74ch;margin:0;padding-left:0}
+ul.clean li{position:relative;padding-left:22px;margin-bottom:9px}
+ul.clean li::before{content:"";position:absolute;left:0;top:9px;width:9px;height:9px;background:var(--ny);border:1.5px solid var(--ink);border-radius:2px}
+
+/* ---- panels ---- */
+.skyband{background:var(--bl);border-radius:20px;padding:36px}
+.skyband h2{max-width:24ch;margin-bottom:12px}
+.skyband .lead{color:#36474a;max-width:62ch}
+.callout{background:var(--ink);color:#f3f0e6;border-radius:16px;padding:26px 28px}
+.callout h2,.callout h3{color:#fff}
+.callout .lead{color:#cfcabb}
+.callout .lime{color:var(--ny)}
+.callout p{color:#cfcabb}
+.callout code{color:#e6e3d8}
+
+/* ---- proof strip (dark, 4 col stat band) ---- */
+.proof{background:var(--ink);border-radius:16px;padding:22px 26px;display:grid;grid-template-columns:repeat(4,1fr);gap:18px}
+.proof .pi{border-left:2px solid var(--ny);padding-left:14px}
+.proof .pv{font-family:var(--head);font-weight:600;font-size:21px;color:#fff;line-height:1.1;font-variant-numeric:tabular-nums}
+.proof .pk{font-family:var(--mono);font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;color:#a8a89e;margin-top:5px}
+@media (max-width:880px){.proof{grid-template-columns:1fr 1fr}}
+
+/* ---- tables ---- */
+.tbl-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:14px;min-width:520px}
+th{background:var(--bl);color:var(--ink);text-align:left;padding:10px 14px;font-size:11.5px;letter-spacing:.1em;text-transform:uppercase;font-family:var(--mono);font-weight:600}
+th:first-child{border-radius:14px 0 0 14px} th:last-child{border-radius:0 14px 14px 0}
+td{padding:11px 14px;border-bottom:1px solid rgba(42,43,41,.09);vertical-align:top}
+tr:last-child td{border-bottom:none}
+td.num{font-family:var(--mono);font-size:13px;font-variant-numeric:tabular-nums;white-space:nowrap}
+
+/* ---- horizontal bar rows (inline graphs, no chart library) ---- */
+.hb-row{display:grid;grid-template-columns:1fr 100px 46px;align-items:center;gap:12px;padding:7px 0}
+.hb-label{font-size:12.5px;color:var(--ink-soft);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.hb-track{height:13px;background:rgba(184,211,216,.42);border-radius:8px;overflow:hidden}
+.hb-fill{height:100%;background:var(--ink);border-radius:0 6px 6px 0}
+.hb-fill.warn{background:var(--warn)}
+.hb-val{font-family:var(--mono);font-size:11.5px;color:var(--muted);text-align:right;font-variant-numeric:tabular-nums}
+
+/* ---- composition bar (part to whole) ---- */
+.comp-bar{display:flex;height:26px;border-radius:6px;overflow:hidden;border:1px solid var(--line)}
+.comp-legend{display:flex;gap:18px;flex-wrap:wrap;margin-top:12px}
+.comp-legend-item{display:flex;align-items:center;gap:7px;font-family:var(--mono);font-size:11px;color:var(--ink-soft)}
+.comp-swatch{width:11px;height:11px;border-radius:2px;flex:none}
+
+.note{border-left:4px solid var(--ny);background:rgba(255,255,255,.5);border-radius:0 18px 18px 0;padding:14px 18px;font-size:13.5px;color:var(--ink-soft)}
+
+footer.sitefoot{padding:28px 0;color:var(--muted);font-size:12.5px;border-top:1.5px solid var(--line)}
+
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}html{scroll-behavior:auto}}
+
+@page{size:A4;margin:16mm 14mm}
+@media print{
+  body{background:#EEEADE;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .navchips{position:static}
+  .card,.score,.skyband,.callout,.proof,.note,.hb-row,tr{break-inside:avoid}
+  h2,h3,h4{break-after:avoid}
+  a{color:inherit;text-decoration:none}
+}
+
+/* ---- v2 additions ---- */
+.score .v.good{color:var(--good)}
+code{font-family:var(--mono);font-size:.92em;background:rgba(42,43,41,.06);padding:1px 5px;border-radius:4px;overflow-wrap:anywhere}
+
+/* ---- template additions ---- */
+.samplebar{position:sticky;top:0;z-index:100;background:var(--warn);color:#fff;font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;text-align:center;padding:8px 14px}
+body.has-sample .navchips{top:33px}
+.block{margin-top:26px}
+h3.bt{margin:0 0 12px}
+.caption{font-size:12.5px;color:var(--muted);margin:10px 0 0;max-width:none}
+.sev{display:inline-block;font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;padding:3px 9px;border-radius:100px;font-weight:600;white-space:nowrap}
+.sev.high,.sev.critical{background:var(--warn);color:#fff}
+.sev.medium{background:var(--ny);color:var(--ink)}
+.sev.low{background:var(--tp);color:var(--ink)}
+.sev.ok{background:var(--good);color:#fff}
+pre.code{margin:0 0 6px;background:var(--ink);color:#e6e3d8;border-radius:12px;padding:16px 18px;overflow-x:auto;font-family:var(--mono);font-size:12px;line-height:1.65;white-space:pre}
+.hb-wide .hb-row{grid-template-columns:minmax(120px,280px) 1fr 80px}
+.phase{display:grid;grid-template-columns:160px 1fr;gap:20px;padding:22px 0;border-top:1.5px solid var(--line)}
+.phase:first-child{border-top:none;padding-top:6px}
+.phase .pn{font-family:var(--mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.phase p{margin-bottom:6px}
+.phase .effort{font-size:13px;color:var(--ink-soft)}
+@media (max-width:700px){.phase{grid-template-columns:1fr;gap:6px}}
+.search{display:block;margin:0 0 12px;padding:10px 14px;width:100%;max-width:420px;border:1px solid var(--line);border-radius:100px;font-family:var(--mono);font-size:13px;background:var(--surface);color:var(--ink)}
+.data-error{max-width:720px;margin:60px auto;padding:22px;border:2px solid var(--warn);border-radius:12px;background:#fff;font-family:var(--mono);font-size:13px;line-height:1.6}
+.callout .lime,.proof .lime{color:var(--ny)}
+.callout h3{font-size:22px;margin-bottom:10px}
+.card h3{margin-top:2px}
+
+/* ---- research-report additions (same tokens, no new colours) ---- */
+.sev.available,.sev.observed{background:var(--good);color:#fff}
+.sev.partial{background:var(--ny);color:var(--ink)}
+.sev.differentlydefined{background:var(--bl);color:var(--ink)}
+.sev.notavailable{background:var(--warn);color:#fff}
+.sev.unconfirmed{background:var(--tp);color:var(--ink)}
+.st-fill{display:flex;height:100%;border-radius:0 6px 6px 0;overflow:hidden}
+.st-fill > div{height:100%}
+.comp-legend.tight{margin-top:4px;margin-bottom:12px}
+.proof-wrap .caption{margin-top:12px}
+@media (max-width:560px){.hb-wide .hb-row{grid-template-columns:1fr 90px !important}.hb-wide .hb-row .hb-track{grid-column:1 / -1;grid-row:2}.hb-wide .hb-row .hb-label{white-space:normal}}
+
+/* ---- conversation sequence and flow tree (Part 2 additions, same tokens) ---- */
+.seq{display:flex;flex-direction:column;gap:8px}
+.seq-row{display:grid;grid-template-columns:64px 70px 1fr;gap:12px;align-items:start;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px 14px}
+.seq-row.mark{border-left:4px solid var(--ny);background:#fff}
+.seq-row.gap{background:transparent;border-style:dashed}
+.seq-row.gap .seq-text{color:var(--muted);font-style:italic}
+.seq-pos{font-family:var(--mono);font-size:11px;color:var(--muted);padding-top:3px}
+.seq-role{display:inline-block;font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;padding:3px 9px;border-radius:100px;font-weight:600}
+.seq-role.user{background:var(--bl);color:var(--ink)}
+.seq-role.assistant{background:var(--ink);color:#fff}
+.seq-text{font-size:13.5px;color:var(--ink-soft);max-width:78ch}
+@media (max-width:620px){.seq-row{grid-template-columns:auto 1fr}.seq-row .seq-text{grid-column:1 / -1}}
+.ft-root{display:flex;align-items:baseline;gap:12px;background:var(--ink);color:#fff;border-radius:14px;padding:16px 20px;max-width:520px;margin:0 auto;border-left:4px solid var(--ny)}
+.ft-v{font-family:var(--head);font-weight:600;font-size:26px;line-height:1;font-variant-numeric:tabular-nums}
+.ft-k{font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase}
+.ft-root .ft-k{color:#cfcabb}
+.ft-branches{margin-top:28px;position:relative}
+.ft-branches::before{content:"";position:absolute;left:25%;right:25%;top:-16px;height:14px;border:1.5px solid var(--line);border-bottom:none;border-radius:10px 10px 0 0}
+.ft-branches::after{content:"";position:absolute;left:50%;top:-28px;height:12px;border-left:1.5px solid var(--line)}
+@media (max-width:880px){.ft-branches::before,.ft-branches::after{display:none}}
+.ft-head{display:flex;align-items:baseline;gap:10px;padding-bottom:12px;border-bottom:1.5px solid var(--line);margin-bottom:6px}
+.ft-head .ft-k{color:var(--muted)}
+.ft-group{padding:10px 0 4px}
+.ft-gh{display:flex;justify-content:space-between;gap:12px;font-size:13.5px;font-weight:500;margin-bottom:4px}
+.ft-gv{font-family:var(--mono);font-size:12.5px;font-variant-numeric:tabular-nums}
+.ft-item{display:grid;grid-template-columns:minmax(120px,1fr) 1fr 40px;gap:10px;align-items:center;padding:4px 0 4px 12px;border-left:2px solid var(--line)}
+.ft-il{font-size:12px;color:var(--ink-soft)}
+@media print{.seq-row,.ft-branch{break-inside:avoid}}
+
+/* ---- verbatim transcript (kept visually distinct from analysis) ---- */
+.tx{background:#fff;border:1.5px solid var(--ink);border-radius:14px;overflow:hidden}
+.tx-head{display:flex;flex-wrap:wrap;align-items:center;gap:10px;padding:12px 18px;background:var(--ink);color:#e6e3d8}
+.tx-badge{font-family:var(--mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;background:var(--ny);color:var(--ink);padding:3px 9px;border-radius:100px;font-weight:600}
+.tx-meta{font-family:var(--mono);font-size:11px;letter-spacing:.04em}
+.tx-msg{padding:14px 18px;border-top:1px solid var(--line)}
+.tx-msg:first-of-type{border-top:none}
+.tx-msg.user{background:rgba(184,211,216,.18)}
+.tx-who{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-bottom:8px}
+.tx-role{font-family:var(--mono);font-size:10.5px;letter-spacing:.12em;font-weight:600;padding:2px 8px;border-radius:4px;background:var(--bl);color:var(--ink)}
+.tx-msg.assistant .tx-role{background:var(--ink);color:#fff}
+.tx-n{font-family:var(--mono);font-size:11px;color:var(--muted)}
+.tx-ex{font-family:var(--mono);font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--warn);border:1px solid var(--warn);border-radius:100px;padding:1px 8px}
+.tx-ex.full{color:var(--good);border-color:var(--good)}
+.tx-body{font-family:var(--sans);font-size:14px;line-height:1.6;color:var(--ink);white-space:pre-wrap;overflow-wrap:anywhere;max-width:80ch}
+.tx-omit{display:block;margin:8px 0;font-family:var(--mono);font-size:11px;color:var(--muted);white-space:normal}
+.tx-gap{padding:12px 18px;border-top:1px dashed var(--line);font-family:var(--mono);font-size:11px;color:var(--muted)}
+@media print{.tx-msg{break-inside:avoid}}
+</style>
+</head>
+<body>
+<div id="app"></div>
+
+<!-- ============================ DATA ============================ -->
+<script id="report-data" type="application/json">
+{
+  "meta": {
+    "title": "Sephora Conversation Deep Dive · Part 2 · WLDM",
+    "brand_tag": "Sephora conversation deep dive · Part 2",
+    "brand_date": "October 2026",
+    "show_logo": true,
+    "sample_data": false,
+    "footer": "Prepared by WLDM AI Research Lab. Observations from multiple collections of publicly available AI conversations and shared interactions; not customer records, purchase histories or verified transactions."
+  },
+  "sections": [
+    {
+      "id": "overview",
+      "nav": "Overview",
+      "hero": true,
+      "eyebrow": "Part 2 · Sephora conversation deep dive",
+      "title": "How Sephora enters AI conversations, ==who arrives with it==, and what happens next",
+      "lead": "Across the observed AI conversations involving Sephora, which other companies and brands appear, how does Sephora enter the dialogue, and how do conversations develop before and after that mention? The inputs are multiple collections of publicly available AI conversations and shared interactions, spanning different systems, dates and sampling methods.",
+      "blocks": [
+        {
+          "type": "scorecards",
+          "items": [
+            {
+              "value": "281",
+              "label": "Conversations analysed",
+              "sub": "of 312 candidates; 31 unrelated matches excluded"
+            },
+            {
+              "value": "176 / 105",
+              "label": "User-first / AI-first",
+              "sub": "where Sephora's name is first observed"
+            },
+            {
+              "value": "645",
+              "label": "Conversation-brand co-mentions",
+              "sub": "across 43 detected brand and company names"
+            },
+            {
+              "value": "4",
+              "label": "AI responses with a Sephora URL",
+              "sub": "of 1,212 recorded AI responses"
+            }
+          ]
+        },
+        {
+          "type": "note",
+          "label": "Research standard",
+          "text": "A brand co-mention is not automatically a comparison, recommendation or endorsement. An AI mention is not automatically unsolicited. An AI answer's claims about a business are not independent verification of those claims, and a link in an answer is not automatically a verified citation. These are observed conversations, not Sephora customer records, consumer-panel data, purchase histories or verified transactions."
+        }
+      ]
+    },
+    {
+      "id": "s1",
+      "nav": "1 · Discovery",
+      "eyebrow": "Section 1 · Find Sephora in the observed conversation population",
+      "title": "A direct-name search found ==206 conversation records== mentioning Sephora",
+      "lead": "The objective was to measure the available AI conversations containing a direct Sephora name reference, and to record whether the user or the assistant introduced the name in the recorded message sequence. This is a discovery step, not a count of customers or completed purchases.",
+      "blocks": [
+        {
+          "type": "proof",
+          "items": [
+            {
+              "value": "4,329,444",
+              "label": "Conversation records examined"
+            },
+            {
+              "value": "206",
+              "label": "Initial Sephora-name matches"
+            },
+            {
+              "value": "3",
+              "label": "Collections with matches"
+            },
+            {
+              "value": "0",
+              "label": "Matches in three platform subsets"
+            }
+          ],
+          "caption": "A discovery count. The examined corpus combines collections gathered in different ways, so the ratio of matches to records is not an estimate of how often Sephora is discussed with AI."
+        },
+        {
+          "type": "table",
+          "title": "Figure 1.1 · Initial matches by collection (unit: conversation records)",
+          "columns": [
+            {
+              "key": "c",
+              "label": "Collection"
+            },
+            {
+              "key": "v",
+              "label": "Initial matches",
+              "kind": "num"
+            },
+            {
+              "key": "note",
+              "label": "Note"
+            }
+          ],
+          "rows": [
+            {
+              "c": "Collection A",
+              "v": "169",
+              "note": "Open collection of logged AI conversations"
+            },
+            {
+              "c": "Collection B",
+              "v": "20",
+              "note": "Logged conversations across many earlier models"
+            },
+            {
+              "c": "Public-sharing subset: ChatGPT",
+              "v": "14",
+              "note": "Conversations users chose to share publicly"
+            },
+            {
+              "c": "Public-sharing subset: Grok",
+              "v": "2",
+              "note": ""
+            },
+            {
+              "c": "Public-sharing subsets: Claude, Gemini, Perplexity",
+              "v": "0",
+              "note": "No observed match in these collected subsets"
+            },
+            {
+              "c": "**All collections**",
+              "v": "206",
+              "note": ""
+            }
+          ],
+          "caption": "A zero in one collected subset does not establish that Sephora is never discussed on that live AI product; it only reflects what was collected."
+        },
+        {
+          "type": "note",
+          "label": "Matching rule",
+          "text": "The initial search looked for the standalone Latin spelling of the brand, including forms such as `Sephora.com`. It did not cover translated scripts or names joined into longer tags. Section 2 extends the search and removes matches that do not refer to the retailer."
+        }
+      ]
+    },
+    {
+      "id": "s2",
+      "nav": "2 · Expansion",
+      "eyebrow": "Section 2 · Expand the search across languages, spellings and combined terms",
+      "title": "After review, ==281 of the 312 candidates== refer to Sephora",
+      "lead": "The second pass captured conversations that refer to Sephora in selected forms beyond the standalone English spelling. It extends the same observed population; it is not a new or independent sample.",
+      "blocks": [
+        {
+          "type": "proof",
+          "items": [
+            {
+              "value": "206",
+              "label": "Initially matched"
+            },
+            {
+              "value": "+106",
+              "label": "Additional candidates"
+            },
+            {
+              "value": "−31",
+              "label": "Excluded as unrelated"
+            },
+            {
+              "value": "281",
+              "label": "Conversations analysed"
+            }
+          ],
+          "caption": "206 + 106 = 312 candidate records. 27 additional and 4 initial matches were excluded: 312 − 31 = 281 analysed. Every figure from Section 3 onward uses the 281 analysed conversations."
+        },
+        {
+          "type": "stacked",
+          "title": "Figure 2.1 · Candidate records by collection (unit: conversation records)",
+          "value_width": "130px",
+          "legend": [
+            {
+              "label": "Initial match, kept",
+              "color": "ink"
+            },
+            {
+              "label": "Added by expanded search, kept",
+              "color": "lime"
+            },
+            {
+              "label": "Excluded as unrelated",
+              "color": "muted"
+            }
+          ],
+          "rows": [
+            {
+              "label": "Collection A",
+              "segments": [
+                166,
+                20,
+                28
+              ],
+              "display": "186 kept, 28 out"
+            },
+            {
+              "label": "Collection B",
+              "segments": [
+                20,
+                58,
+                0
+              ],
+              "display": "78 kept, 0 out"
+            },
+            {
+              "label": "Public-sharing subset",
+              "segments": [
+                16,
+                1,
+                3
+              ],
+              "display": "17 kept, 3 out"
+            }
+          ],
+          "caption": "Source-specific sample results, not comparisons between live platforms. Kept, initial + additional: collection A 166 + 20; collection B 20 + 58; public-sharing subset 16 + 1."
+        },
+        {
+          "type": "table",
+          "title": "Figure 2.2 · How the 106 additional candidates matched, and how many were kept (unit: conversation records)",
+          "columns": [
+            {
+              "key": "f",
+              "label": "Matched form"
+            },
+            {
+              "key": "t",
+              "label": "Candidates",
+              "kind": "num"
+            },
+            {
+              "key": "x",
+              "label": "Excluded",
+              "kind": "num"
+            },
+            {
+              "key": "k",
+              "label": "Kept",
+              "kind": "num"
+            }
+          ],
+          "rows": [
+            {
+              "f": "Chinese",
+              "t": "74",
+              "x": "0",
+              "k": "74"
+            },
+            {
+              "f": "Cyrillic",
+              "t": "8",
+              "x": "7",
+              "k": "1"
+            },
+            {
+              "f": "Korean",
+              "t": "3",
+              "x": "3",
+              "k": "0"
+            },
+            {
+              "f": "Arabic / Persian",
+              "t": "2",
+              "x": "0",
+              "k": "2"
+            },
+            {
+              "f": "Alternate Latin spelling",
+              "t": "17",
+              "x": "17",
+              "k": "0"
+            },
+            {
+              "f": "Sephora joined into a longer string",
+              "t": "2",
+              "x": "0",
+              "k": "2"
+            },
+            {
+              "f": "**All additional records**",
+              "t": "106",
+              "x": "27",
+              "k": "79"
+            }
+          ],
+          "caption": "7 of the 79 kept additional records are multi-turn."
+        },
+        {
+          "type": "table",
+          "title": "Figure 2.3 · What the 31 excluded matches actually were (unit: conversation records)",
+          "columns": [
+            {
+              "key": "w",
+              "label": "What the matched text is"
+            },
+            {
+              "key": "e",
+              "label": "Examples of the matched text"
+            },
+            {
+              "key": "v",
+              "label": "Records",
+              "kind": "num"
+            }
+          ],
+          "rows": [
+            {
+              "w": "Letters inside a longer English word",
+              "e": "seforall.org · #ParadiseForAll · #SunriseForAll · @joseforatx · caseforand",
+              "v": "8"
+            },
+            {
+              "w": "Computer code",
+              "e": "addCourseForAdmin · responseForActionSignature",
+              "v": "2"
+            },
+            {
+              "w": "A person's first name",
+              "e": "Sefora, in a list of names or an official document",
+              "v": "7"
+            },
+            {
+              "w": "Korean words for cells",
+              "e": "T세포라고 (\"called T-cells\") · 세포라도",
+              "v": "3"
+            },
+            {
+              "w": "Russian names and joined words",
+              "e": "Нисефор (Nicéphore Niépce) · Сефора (a biblical name) · бизнесеФормируя · эссеформата",
+              "v": "5"
+            },
+            {
+              "w": "A mobile game title",
+              "e": "Тени Сефора (\"Shadows of Sefora\")",
+              "v": "2"
+            },
+            {
+              "w": "**Initial matches: a film role**",
+              "e": "Sephora, Moses' wife in The Ten Commandments",
+              "v": "1"
+            },
+            {
+              "w": "**Initial matches: a girl's name**",
+              "e": "سفورا (Sephora), in a list of Persian girls' names",
+              "v": "1"
+            },
+            {
+              "w": "**Initial matches: a fictional substance**",
+              "e": "\"I injected the Sephora\", in a pasted video transcript",
+              "v": "1"
+            },
+            {
+              "w": "**Initial matches: a speech-to-text error**",
+              "e": "\"an emoji that's a Sephora\", in a pasted talk transcript about a Microsoft assistant",
+              "v": "1"
+            },
+            {
+              "w": "**Total excluded**",
+              "e": "",
+              "v": "31"
+            }
+          ],
+          "caption": "The 27 additional matches were checked against every matched occurrence in their full exported text; none contains the standard spelling \"Sephora\". The 206 initial matches were checked against the context around each match, and 4 were excluded. None of the 31 has any detected brand co-mention or reference link."
+        },
+        {
+          "type": "table",
+          "title": "Examples of matched forms observed in the conversations",
+          "columns": [
+            {
+              "key": "s",
+              "label": "Script or variant"
+            },
+            {
+              "key": "e",
+              "label": "Observed form"
+            }
+          ],
+          "rows": [
+            {
+              "s": "Chinese",
+              "e": "丝芙兰"
+            },
+            {
+              "s": "Cyrillic",
+              "e": "сефора"
+            },
+            {
+              "s": "Arabic / Persian",
+              "e": "سفورا · سيفورا"
+            },
+            {
+              "s": "Sephora joined into a longer string",
+              "e": "asSephora · #sephorafavorites"
+            }
+          ],
+          "caption": "Forms found in kept conversations. No Korean or alternate Latin match referred to Sephora, so all of those were excluded."
+        },
+        {
+          "type": "note",
+          "label": "What the expansion is, and is not",
+          "text": "The expansion covered selected Chinese, Cyrillic, Arabic/Persian, Korean and alternate Latin forms, plus combined Sephora-containing strings. It was not an exhaustive linguistic search. After review, 31 matches that refer to other words, names, characters or code were excluded, leaving 281 conversations. Two borderline initial matches were kept because they use the brand name itself: a word list for a party game that includes \"sephora\", and scanned text showing brand logos, Sephora's among them."
+        }
+      ]
+    },
+    {
+      "id": "s3",
+      "nav": "3 · Context",
+      "eyebrow": "Section 3 · Preserve the complete conversation context",
+      "title": "Each record is analysed as a ==full sequence==, not an isolated mention",
+      "lead": "The analysis follows the recorded order of messages around each match: what came before Sephora's first appearance, the message where it first appears, and what followed. Every observed context is kept, including retail, marketing, creative work, business research and incidental references; nothing is filtered out for not being about shopping.",
+      "blocks": [
+        {
+          "type": "scorecards",
+          "items": [
+            {
+              "value": "281",
+              "label": "Conversation records"
+            },
+            {
+              "value": "2,424",
+              "label": "Recorded messages",
+              "sub": "1,212 user and 1,212 AI"
+            },
+            {
+              "value": "1,212",
+              "label": "AI messages"
+            },
+            {
+              "value": "420",
+              "label": "Messages naming Sephora",
+              "sub": "first mentions plus later repeats"
+            }
+          ]
+        },
+        {
+          "type": "table",
+          "title": "Figure 3.1 · Where the 2,424 messages sit relative to Sephora's first mention (unit: messages)",
+          "columns": [
+            {
+              "key": "p",
+              "label": "Position in conversation"
+            },
+            {
+              "key": "u",
+              "label": "User",
+              "kind": "num"
+            },
+            {
+              "key": "a",
+              "label": "AI",
+              "kind": "num"
+            },
+            {
+              "key": "t",
+              "label": "Total",
+              "kind": "num"
+            }
+          ],
+          "rows": [
+            {
+              "p": "Before the first Sephora mention",
+              "u": "411",
+              "a": "306",
+              "t": "717"
+            },
+            {
+              "p": "The first Sephora mention itself",
+              "u": "176",
+              "a": "105",
+              "t": "281"
+            },
+            {
+              "p": "After the first Sephora mention",
+              "u": "625",
+              "a": "801",
+              "t": "1,426"
+            },
+            {
+              "p": "**All messages**",
+              "u": "1,212",
+              "a": "1,212",
+              "t": "2,424"
+            }
+          ],
+          "caption": "Each conversation contributes exactly one first-mention message, so that row totals 281."
+        },
+        {
+          "type": "transcript",
+          "title": "Figure 3.2 · One recorded conversation, as written",
+          "label": "Public-sharing subset · English · record ref. …e54d138ffa3b · 8 messages",
+          "items": [
+            {
+              "n": "Message 1",
+              "role": "user",
+              "parts": [
+                {
+                  "text": "What businesses are located in the World Trade Center these days"
+                }
+              ]
+            },
+            {
+              "n": "Message 2",
+              "role": "assistant",
+              "excerpt": true,
+              "parts": [
+                {
+                  "text": "Here’s an updated overview of the current tenants and businesses across the rebuilt World Trade Center complex in <REDACTED>:"
+                },
+                {
+                  "omit": "[… 2,514 characters omitted …]"
+                },
+                {
+                  "text": "Oculus & Westfield Mall\n\nThe Oculus transit hub / shopping mall spans ~365,000 ft² with around 125 retail outlets\n\nHighlights include Banana Republic, Coach, <REDACTED>, <REDACTED>, <REDACTED>, <REDACTED>’s Secret, Pandora, <REDACTED>, The Children’s Place, and several eateriesWikipedia+1Architectural Digest+1"
+                },
+                {
+                  "omit": "[… 1,569 characters omitted …]"
+                }
+              ]
+            },
+            {
+              "n": "Message 3",
+              "role": "user",
+              "parts": [
+                {
+                  "text": "This is not exactly a premier client list"
+                }
+              ]
+            },
+            {
+              "n": "Message 4",
+              "role": "assistant",
+              "excerpt": true,
+              "parts": [
+                {
+                  "text": "Certainly — here’s an enhanced and more “premier client”–focused snapshot of the major tenants currently occupying the World Trade Center complex:"
+                },
+                {
+                  "omit": "[… 4,508 characters omitted …]"
+                },
+                {
+                  "text": "🛍️ Oculus / Westfield Mall\n\n125+ retailers, including luxury and national brands such asSephora,Coach,<REDACTED>,<REDACTED>,<REDACTED>,<REDACTED>’s Secret,Pandora— catering to an upscale, globally diverse audience."
+                },
+                {
+                  "omit": "[… 1,142 characters omitted …]"
+                }
+              ]
+            },
+            {
+              "n": "Message 5",
+              "role": "user",
+              "parts": [
+                {
+                  "text": "Yikes … and the surrounding <REDACTED> neighborhood. Any businesses still located there?"
+                }
+              ]
+            },
+            {
+              "gap": "[Messages 6–8 of 8 not shown]"
+            }
+          ],
+          "caption": "Wording, spelling and spacing are reproduced exactly as recorded, including words that run together where the export dropped formatting. `<REDACTED>` markers are in the source record. Messages 2 and 4 are long and repeat some paragraphs; only the marked excerpts are shown. Messages 6 to 8 are not shown."
+        },
+        {
+          "type": "note",
+          "label": "Analysis of Figure 3.2",
+          "text": "**Before:** messages 1 to 3, a question about businesses at the World Trade Center and the user's pushback on the first answer. **First mention:** message 4, an AI answer, where Sephora is one name in a list of mall retailers. **After:** the user's next message (5) moves to the surrounding neighbourhood and names no detected brand; Sephora is not named again in messages 5 to 8. The name is written joined to the preceding word in this record, which is why the standalone-spelling search missed it and the expanded search found it. This is one illustration of the unit of analysis, not a typical conversation."
+        }
+      ]
+    },
+    {
+      "id": "s4",
+      "nav": "4 · Repeats",
+      "eyebrow": "Section 4 · Distinguish exact repeated dialogue from observed records",
+      "title": "281 observed records contain ==278 distinct exact dialogues==",
+      "lead": "A raw record count and a distinct-dialogue count answer different questions. Both are kept: raw records describe what was observed, and distinct dialogues show how much of it is unique text.",
+      "blocks": [
+        {
+          "type": "composition",
+          "title": "Figure 4.1 · Observed records split by exact content (unit: conversation records)",
+          "items": [
+            {
+              "label": "Distinct exact dialogues",
+              "value": 278,
+              "display": "278",
+              "color": "ink"
+            },
+            {
+              "label": "Records repeating an earlier dialogue exactly",
+              "value": 3,
+              "display": "3",
+              "color": "warn"
+            }
+          ],
+          "caption": "Exact deduplication compares the full sequence of roles and message text. Two records count as one dialogue only when every role and character matches. The audited baseline was 309 distinct dialogues among the 312 candidates; none of the 31 excluded records was an exact repeat, so all 3 repeats remain and 281 − 3 = 278."
+        },
+        {
+          "type": "text",
+          "paragraphs": [
+            "Repeated text can come from separately logged records, so a repeat is shown as an additional lens, not as evidence of fraudulent activity or faulty collection.",
+            "Near-duplicates are a larger effect than exact repeats. In **59 of the 79** conversations that co-mention Estée Lauder, the opening user request is one of 5 wordings of the same Chinese request for advertising copy, which names Estée Lauder's product and gives Sephora's official flagship store as the contact point; 47 of them share identical request text. Because the AI responses differ, almost all remain distinct exact dialogues. They are separate observed records, but they lift Estée Lauder's raw co-mention count."
+          ]
+        },
+        {
+          "type": "note",
+          "label": "Why near-duplicates need qualitative reading",
+          "text": "These marketing prompts were not systematically deduplicated as semantic duplicates. Any brand count that includes them should be read alongside the context in which the brand appears, as Sections 5 and 8 do."
+        }
+      ]
+    },
+    {
+      "id": "s5",
+      "nav": "5 · Brands",
+      "eyebrow": "Section 5 · Identify other brands and companies discussed alongside Sephora",
+      "title": "43 brand and company names appear alongside Sephora, in ==645 conversation-brand records==",
+      "lead": "Co-occurrence counts show which detected company names appear in the same conversation as Sephora. They distinguish retailers, beauty brands and other businesses, but they do not make every company a direct Sephora competitor.",
+      "blocks": [
+        {
+          "type": "bars",
+          "title": "Figure 5.1 · Most frequent co-mentioned names (unit: conversations, of 281)",
+          "value_width": "110px",
+          "items": [
+            {
+              "label": "Estée Lauder",
+              "value": 79,
+              "display": "79 · 28.1%"
+            },
+            {
+              "label": "Amazon",
+              "value": 76,
+              "display": "76 · 27.0%"
+            },
+            {
+              "label": "Ulta Beauty",
+              "value": 49,
+              "display": "49 · 17.4%"
+            },
+            {
+              "label": "Nike",
+              "value": 35,
+              "display": "35 · 12.5%"
+            },
+            {
+              "label": "Zara",
+              "value": 32,
+              "display": "32 · 11.4%"
+            },
+            {
+              "label": "Nordstrom",
+              "value": 31,
+              "display": "31 · 11.0%"
+            },
+            {
+              "label": "L'Oréal",
+              "value": 30,
+              "display": "30 · 10.7%"
+            },
+            {
+              "label": "Walmart",
+              "value": 30,
+              "display": "30 · 10.7%"
+            },
+            {
+              "label": "Dior",
+              "value": 25,
+              "display": "25 · 8.9%"
+            },
+            {
+              "label": "Glossier",
+              "value": 18,
+              "display": "18 · 6.4%"
+            }
+          ],
+          "caption": "Each bar counts matched conversations containing the name at least once. It does not count recommendations, factual affiliations, competitive alternatives or purchase decisions."
+        },
+        {
+          "type": "scorecards",
+          "items": [
+            {
+              "value": "230",
+              "label": "Retailer / marketplace records",
+              "sub": "9 names"
+            },
+            {
+              "value": "256",
+              "label": "Beauty / product brand records",
+              "sub": "24 names"
+            },
+            {
+              "value": "159",
+              "label": "Other or mixed records",
+              "sub": "10 names, such as fashion and luxury houses"
+            }
+          ]
+        },
+        {
+          "type": "table",
+          "title": "Figure 5.2 · The full 43-name inventory (unit: conversations)",
+          "columns": [
+            {
+              "key": "b",
+              "label": "Brand or company"
+            },
+            {
+              "key": "t",
+              "label": "Type",
+              "kind": "chip"
+            },
+            {
+              "key": "c",
+              "label": "Conversations",
+              "kind": "num"
+            },
+            {
+              "key": "p",
+              "label": "Of 281",
+              "kind": "num"
+            },
+            {
+              "key": "u",
+              "label": "First named by user",
+              "kind": "num"
+            },
+            {
+              "key": "a",
+              "label": "First named by AI",
+              "kind": "num"
+            }
+          ],
+          "rows": [
+            {
+              "b": "Estée Lauder",
+              "t": "Beauty / product brand",
+              "c": "79",
+              "p": "28.1%",
+              "u": "65",
+              "a": "14"
+            },
+            {
+              "b": "Amazon",
+              "t": "Retailer / marketplace",
+              "c": "76",
+              "p": "27.0%",
+              "u": "16",
+              "a": "60"
+            },
+            {
+              "b": "Ulta Beauty",
+              "t": "Retailer / marketplace",
+              "c": "49",
+              "p": "17.4%",
+              "u": "12",
+              "a": "37"
+            },
+            {
+              "b": "Nike",
+              "t": "Other or mixed",
+              "c": "35",
+              "p": "12.5%",
+              "u": "12",
+              "a": "23"
+            },
+            {
+              "b": "Zara",
+              "t": "Other or mixed",
+              "c": "32",
+              "p": "11.4%",
+              "u": "13",
+              "a": "19"
+            },
+            {
+              "b": "Nordstrom",
+              "t": "Retailer / marketplace",
+              "c": "31",
+              "p": "11.0%",
+              "u": "6",
+              "a": "25"
+            },
+            {
+              "b": "L'Oréal",
+              "t": "Beauty / product brand",
+              "c": "30",
+              "p": "10.7%",
+              "u": "12",
+              "a": "18"
+            },
+            {
+              "b": "Walmart",
+              "t": "Retailer / marketplace",
+              "c": "30",
+              "p": "10.7%",
+              "u": "14",
+              "a": "16"
+            },
+            {
+              "b": "Dior",
+              "t": "Other or mixed",
+              "c": "25",
+              "p": "8.9%",
+              "u": "9",
+              "a": "16"
+            },
+            {
+              "b": "Glossier",
+              "t": "Beauty / product brand",
+              "c": "18",
+              "p": "6.4%",
+              "u": "3",
+              "a": "15"
+            },
+            {
+              "b": "Gucci",
+              "t": "Other or mixed",
+              "c": "16",
+              "p": "5.7%",
+              "u": "4",
+              "a": "12"
+            },
+            {
+              "b": "Macy's",
+              "t": "Retailer / marketplace",
+              "c": "15",
+              "p": "5.3%",
+              "u": "4",
+              "a": "11"
+            },
+            {
+              "b": "LVMH",
+              "t": "Other or mixed",
+              "c": "14",
+              "p": "5.0%",
+              "u": "7",
+              "a": "7"
+            },
+            {
+              "b": "The Ordinary",
+              "t": "Beauty / product brand",
+              "c": "14",
+              "p": "5.0%",
+              "u": "8",
+              "a": "6"
+            },
+            {
+              "b": "Chanel",
+              "t": "Other or mixed",
+              "c": "13",
+              "p": "4.6%",
+              "u": "4",
+              "a": "9"
+            },
+            {
+              "b": "Clinique",
+              "t": "Beauty / product brand",
+              "c": "13",
+              "p": "4.6%",
+              "u": "4",
+              "a": "9"
+            },
+            {
+              "b": "Saks Fifth Avenue",
+              "t": "Retailer / marketplace",
+              "c": "13",
+              "p": "4.6%",
+              "u": "0",
+              "a": "13"
+            },
+            {
+              "b": "The Body Shop",
+              "t": "Other or mixed",
+              "c": "12",
+              "p": "4.3%",
+              "u": "3",
+              "a": "9"
+            },
+            {
+              "b": "Shiseido",
+              "t": "Beauty / product brand",
+              "c": "10",
+              "p": "3.6%",
+              "u": "4",
+              "a": "6"
+            },
+            {
+              "b": "Fenty Beauty",
+              "t": "Beauty / product brand",
+              "c": "9",
+              "p": "3.2%",
+              "u": "3",
+              "a": "6"
+            },
+            {
+              "b": "Kiehl's",
+              "t": "Beauty / product brand",
+              "c": "9",
+              "p": "3.2%",
+              "u": "4",
+              "a": "5"
+            },
+            {
+              "b": "Maybelline",
+              "t": "Beauty / product brand",
+              "c": "9",
+              "p": "3.2%",
+              "u": "1",
+              "a": "8"
+            },
+            {
+              "b": "Lancôme",
+              "t": "Beauty / product brand",
+              "c": "8",
+              "p": "2.8%",
+              "u": "2",
+              "a": "6"
+            },
+            {
+              "b": "Cult Beauty",
+              "t": "Retailer / marketplace",
+              "c": "7",
+              "p": "2.5%",
+              "u": "3",
+              "a": "4"
+            },
+            {
+              "b": "Drunk Elephant",
+              "t": "Beauty / product brand",
+              "c": "7",
+              "p": "2.5%",
+              "u": "3",
+              "a": "4"
+            },
+            {
+              "b": "Neutrogena",
+              "t": "Beauty / product brand",
+              "c": "7",
+              "p": "2.5%",
+              "u": "3",
+              "a": "4"
+            },
+            {
+              "b": "Huda Beauty",
+              "t": "Beauty / product brand",
+              "c": "6",
+              "p": "2.1%",
+              "u": "0",
+              "a": "6"
+            },
+            {
+              "b": "Paula's Choice",
+              "t": "Beauty / product brand",
+              "c": "6",
+              "p": "2.1%",
+              "u": "5",
+              "a": "1"
+            },
+            {
+              "b": "Bloomingdale's",
+              "t": "Retailer / marketplace",
+              "c": "5",
+              "p": "1.8%",
+              "u": "1",
+              "a": "4"
+            },
+            {
+              "b": "CeraVe",
+              "t": "Beauty / product brand",
+              "c": "4",
+              "p": "1.4%",
+              "u": "3",
+              "a": "1"
+            },
+            {
+              "b": "Charlotte Tilbury",
+              "t": "Beauty / product brand",
+              "c": "4",
+              "p": "1.4%",
+              "u": "1",
+              "a": "3"
+            },
+            {
+              "b": "Douglas",
+              "t": "Retailer / marketplace",
+              "c": "4",
+              "p": "1.4%",
+              "u": "1",
+              "a": "3"
+            },
+            {
+              "b": "La Roche-Posay",
+              "t": "Beauty / product brand",
+              "c": "4",
+              "p": "1.4%",
+              "u": "1",
+              "a": "3"
+            },
+            {
+              "b": "NARS",
+              "t": "Beauty / product brand",
+              "c": "4",
+              "p": "1.4%",
+              "u": "1",
+              "a": "3"
+            },
+            {
+              "b": "Olaplex",
+              "t": "Beauty / product brand",
+              "c": "4",
+              "p": "1.4%",
+              "u": "3",
+              "a": "1"
+            },
+            {
+              "b": "Prada",
+              "t": "Other or mixed",
+              "c": "4",
+              "p": "1.4%",
+              "u": "0",
+              "a": "4"
+            },
+            {
+              "b": "Tom Ford",
+              "t": "Other or mixed",
+              "c": "4",
+              "p": "1.4%",
+              "u": "2",
+              "a": "2"
+            },
+            {
+              "b": "Victoria’s Secret",
+              "t": "Other or mixed",
+              "c": "4",
+              "p": "1.4%",
+              "u": "4",
+              "a": "0"
+            },
+            {
+              "b": "Sol de Janeiro",
+              "t": "Beauty / product brand",
+              "c": "3",
+              "p": "1.1%",
+              "u": "3",
+              "a": "0"
+            },
+            {
+              "b": "Urban Decay",
+              "t": "Beauty / product brand",
+              "c": "3",
+              "p": "1.1%",
+              "u": "1",
+              "a": "2"
+            },
+            {
+              "b": "Rare Beauty",
+              "t": "Beauty / product brand",
+              "c": "2",
+              "p": "0.7%",
+              "u": "0",
+              "a": "2"
+            },
+            {
+              "b": "Tarte Cosmetics",
+              "t": "Beauty / product brand",
+              "c": "2",
+              "p": "0.7%",
+              "u": "0",
+              "a": "2"
+            },
+            {
+              "b": "Moroccanoil",
+              "t": "Beauty / product brand",
+              "c": "1",
+              "p": "0.4%",
+              "u": "1",
+              "a": "0"
+            },
+            {
+              "b": "**All 43 names**",
+              "t": "",
+              "c": "645",
+              "p": "",
+              "u": "246",
+              "a": "399"
+            }
+          ],
+          "caption": "Type is assigned only where it is unambiguous. Names that are both product brands and retailers, or fashion and luxury houses with beauty lines, are grouped as other or mixed. Shares use the 281 analysed conversations as the denominator. The 31 excluded records contained no detected brand, so every brand count is unchanged by the exclusion."
+        },
+        {
+          "type": "note",
+          "label": "Reading the counts",
+          "text": "Some names appear in broad lists, fictional scenarios, marketing copy or older AI-generated explanations, so a co-mention is context, not a commercial endorsement. A separate, broader working inventory was explored and is not mixed into these figures. The 43-name inventory is not guaranteed to contain every brand named in the conversations."
+        }
+      ]
+    },
+    {
+      "id": "s6",
+      "nav": "6 · First mention",
+      "eyebrow": "Section 6 · Establish who introduces Sephora",
+      "title": "Users name Sephora first in ==176 conversations==; the AI does in 105",
+      "lead": "\"First\" means the first literal appearance of the Sephora name in the recorded exchange. It shows who typed or generated the name first, not why.",
+      "blocks": [
+        {
+          "type": "composition",
+          "title": "Figure 6.1 · Who first names Sephora (unit: conversation records, total 281)",
+          "items": [
+            {
+              "label": "User message first",
+              "value": 176,
+              "display": "176 (62.6%)",
+              "color": "sky"
+            },
+            {
+              "label": "AI message first",
+              "value": 105,
+              "display": "105 (37.4%)",
+              "color": "ink"
+            }
+          ]
+        },
+        {
+          "type": "table",
+          "title": "Figure 6.2 · Where the first mention falls (unit: conversation records)",
+          "columns": [
+            {
+              "key": "w",
+              "label": "First mention"
+            },
+            {
+              "key": "v",
+              "label": "Conversations",
+              "kind": "num"
+            }
+          ],
+          "rows": [
+            {
+              "w": "In the user's opening message",
+              "v": "152"
+            },
+            {
+              "w": "In a later user message",
+              "v": "24"
+            },
+            {
+              "w": "In the AI's first reply",
+              "v": "50"
+            },
+            {
+              "w": "In a later AI reply",
+              "v": "55"
+            },
+            {
+              "w": "**Total**",
+              "v": "281"
+            }
+          ]
+        },
+        {
+          "type": "table",
+          "title": "Figure 6.3 · First mention by search stage (unit: conversation records)",
+          "columns": [
+            {
+              "key": "s",
+              "label": "Search stage"
+            },
+            {
+              "key": "u",
+              "label": "User first",
+              "kind": "num"
+            },
+            {
+              "key": "a",
+              "label": "AI first",
+              "kind": "num"
+            },
+            {
+              "key": "t",
+              "label": "Total",
+              "kind": "num"
+            }
+          ],
+          "rows": [
+            {
+              "s": "Initial standalone-spelling matches kept",
+              "u": "103",
+              "a": "99",
+              "t": "202"
+            },
+            {
+              "s": "Additional matches kept from the expanded search",
+              "u": "73",
+              "a": "6",
+              "t": "79"
+            }
+          ],
+          "caption": "The additional records are mostly user-first, consistent with the repeated user-written advertising prompts described in Section 4."
+        },
+        {
+          "type": "callout",
+          "title": "AI-first is ==not the same as 105 recommendations==",
+          "text": "A user can ask for a category, such as authentic beauty retailers or affiliate programmes, and receive Sephora as one of several examples. The first-mention count shows where the name first appears; it does not show whether the user asked about Sephora, whether the mention was unsolicited, or whether it was a recommendation."
+        }
+      ]
+    },
+    {
+      "id": "s7",
+      "nav": "7 · Contexts",
+      "eyebrow": "Section 7 · Understand the actual discussion contexts",
+      "title": "Sephora appears in ==seven kinds of context==, most of them not a purchase",
+      "lead": "These are the context types observed in the evidence, each described with a reference to one real conversation. They describe why Sephora appears; they are not sized. Recorded wording is shown only where the complete source messages were available (Figure 3.2).",
+      "blocks": [
+        {
+          "type": "cards",
+          "title": "Figure 7.1 · Observed context types, one example each",
+          "columns": 2,
+          "items": [
+            {
+              "tag": "ID 1565355",
+              "title": "1 · Product advice",
+              "text": "The user names Sephora in the request itself, asking for product ideas for a friend who likes Sephora products."
+            },
+            {
+              "tag": "ID 3654303",
+              "title": "2 · Retailer options",
+              "text": "The user asks where men most often buy perfume; the AI answer groups retailers by type and names Sephora among them. The user then asks which men's perfumes sell most. The answer is a reported example, not a verified market ranking."
+            },
+            {
+              "tag": "ID 2105133",
+              "title": "3 · Affiliate marketing",
+              "text": "Asked for affiliate programmes to monetise content about lip care, the assistant lists Sephora and Ulta Beauty as affiliate options. A similar pattern appears in ID 3743379, an affiliate list for a fashion and lifestyle channel."
+            },
+            {
+              "tag": "ID 1909349",
+              "title": "4 · Business and retail strategy",
+              "text": "In a long academic discussion of branding, the user asks which fashion brands are known for experiential retail and omnichannel branding. The assistant lists Nike, Burberry and Sephora, among others."
+            },
+            {
+              "tag": "ID 2733926",
+              "title": "5 · Marketing and promotional content",
+              "text": "The user pastes a caption for a Dior blush unboxing video, tagged #sephorafavorites, and asks for a description and hashtags. The assistant's copy names Dior and Sephora."
+            },
+            {
+              "tag": "ID 00b7c8dc5d154e73994376af01561bd9",
+              "title": "6 · General lists and examples",
+              "text": "Asked for popular online fashion shops, the assistant gives a ten-item list in which Sephora is one entry. No direct comparison with Sephora follows."
+            },
+            {
+              "tag": "ID 8614690",
+              "title": "7 · Creative, fictional or technical work",
+              "text": "In a world-building exercise about an invented island nation, the assistant writes a social post listing 39 global store brands said to operate there, ending with Sephora. Later turns continue the fiction."
+            }
+          ],
+          "caption": "Descriptions written by the research team from the indexed context; they are not quotations. Technical work also appears: in another record, Sephora is a row in product-category data pasted into a database debugging request (ID 3984803). Such mentions do not indicate consumer interest."
+        },
+        {
+          "type": "callout",
+          "title": "Why there are ==no percentages== here",
+          "text": "An initial keyword approach and later small-model tests misclassified some conversations, so automated category counts are provisional. A defensible percentage split of all 281 conversations by purpose was not established. The context types and examples are grounded in the evidence; their relative sizes are unknown."
+        }
+      ]
+    },
+    {
+      "id": "s8",
+      "nav": "8 · Relationships",
+      "eyebrow": "Section 8 · Define the relationship between Sephora and associated brands",
+      "title": "Most associated brands arrive ==in the same message== as Sephora",
+      "lead": "Each of the 645 conversation-brand records shows who named the brand first and whether that first appearance came before Sephora, in the same message as Sephora's first mention, or after it. These are observed positions in the sequence, not semantic labels.",
+      "blocks": [
+        {
+          "type": "stacked",
+          "title": "Figure 8.1 · Where a brand first appears relative to Sephora, by who named it (unit: conversation-brand records)",
+          "value_width": "70px",
+          "legend": [
+            {
+              "label": "Before Sephora",
+              "color": "#5E8C97"
+            },
+            {
+              "label": "Same message as Sephora's first mention",
+              "color": "ink"
+            },
+            {
+              "label": "After Sephora",
+              "color": "lime"
+            }
+          ],
+          "rows": [
+            {
+              "label": "Brand first named by AI",
+              "segments": [
+                63,
+                266,
+                70
+              ],
+              "display": "399"
+            },
+            {
+              "label": "Brand first named by user",
+              "segments": [
+                20,
+                212,
+                14
+              ],
+              "display": "246"
+            },
+            {
+              "label": "All relationships",
+              "segments": [
+                83,
+                478,
+                84
+              ],
+              "display": "645"
+            }
+          ],
+          "caption": "All relationships: 83 before, 478 in the same message, 84 after. A shared message can be, for example, a list in which Sephora and the brand appear together."
+        },
+        {
+          "type": "scorecards",
+          "items": [
+            {
+              "value": "392",
+              "label": "Brand in an AI message that also names Sephora",
+              "sub": "of 645 records"
+            },
+            {
+              "value": "35",
+              "label": "User names the brand after Sephora",
+              "sub": "of 645 records"
+            },
+            {
+              "value": "15",
+              "label": "AI names Sephora after the user named the brand",
+              "sub": "of 645 records"
+            }
+          ]
+        },
+        {
+          "type": "table",
+          "title": "Figure 8.2 · Sequence profile of the ten most frequent names (unit: conversations)",
+          "columns": [
+            {
+              "key": "b",
+              "label": "Brand"
+            },
+            {
+              "key": "c",
+              "label": "Conv.",
+              "kind": "num"
+            },
+            {
+              "key": "u",
+              "label": "First by user",
+              "kind": "num"
+            },
+            {
+              "key": "a",
+              "label": "First by AI",
+              "kind": "num"
+            },
+            {
+              "key": "bf",
+              "label": "Before",
+              "kind": "num"
+            },
+            {
+              "key": "s",
+              "label": "Same msg",
+              "kind": "num"
+            },
+            {
+              "key": "af",
+              "label": "After",
+              "kind": "num"
+            },
+            {
+              "key": "sa",
+              "label": "In AI msg with Sephora",
+              "kind": "num"
+            },
+            {
+              "key": "f",
+              "label": "User names later",
+              "kind": "num"
+            }
+          ],
+          "rows": [
+            {
+              "b": "Estée Lauder",
+              "c": "79",
+              "u": "65",
+              "a": "14",
+              "bf": "4",
+              "s": "74",
+              "af": "1",
+              "sa": "38",
+              "f": "2"
+            },
+            {
+              "b": "Amazon",
+              "c": "76",
+              "u": "16",
+              "a": "60",
+              "bf": "8",
+              "s": "60",
+              "af": "8",
+              "sa": "57",
+              "f": "3"
+            },
+            {
+              "b": "Ulta Beauty",
+              "c": "49",
+              "u": "12",
+              "a": "37",
+              "bf": "1",
+              "s": "44",
+              "af": "4",
+              "sa": "40",
+              "f": "3"
+            },
+            {
+              "b": "Nike",
+              "c": "35",
+              "u": "12",
+              "a": "23",
+              "bf": "5",
+              "s": "23",
+              "af": "7",
+              "sa": "24",
+              "f": "3"
+            },
+            {
+              "b": "Zara",
+              "c": "32",
+              "u": "13",
+              "a": "19",
+              "bf": "3",
+              "s": "27",
+              "af": "2",
+              "sa": "17",
+              "f": "0"
+            },
+            {
+              "b": "Nordstrom",
+              "c": "31",
+              "u": "6",
+              "a": "25",
+              "bf": "3",
+              "s": "27",
+              "af": "1",
+              "sa": "24",
+              "f": "1"
+            },
+            {
+              "b": "L'Oréal",
+              "c": "30",
+              "u": "12",
+              "a": "18",
+              "bf": "5",
+              "s": "22",
+              "af": "3",
+              "sa": "16",
+              "f": "3"
+            },
+            {
+              "b": "Walmart",
+              "c": "30",
+              "u": "14",
+              "a": "16",
+              "bf": "5",
+              "s": "21",
+              "af": "4",
+              "sa": "16",
+              "f": "2"
+            },
+            {
+              "b": "Dior",
+              "c": "25",
+              "u": "9",
+              "a": "16",
+              "bf": "4",
+              "s": "17",
+              "af": "4",
+              "sa": "17",
+              "f": "2"
+            },
+            {
+              "b": "Glossier",
+              "c": "18",
+              "u": "3",
+              "a": "15",
+              "bf": "2",
+              "s": "12",
+              "af": "4",
+              "sa": "14",
+              "f": "2"
+            }
+          ],
+          "caption": "Estée Lauder is mostly user-introduced (65 of 79), largely through the repeated advertising prompts in Section 4. Amazon, Ulta Beauty and Nordstrom are mostly introduced by the AI, usually in the same answer as Sephora."
+        },
+        {
+          "type": "cards",
+          "title": "Figure 8.3 · Five real cases, five different relationships",
+          "columns": 2,
+          "items": [
+            {
+              "tag": "ID 3654303 · Men's perfume",
+              "title": "Retailer options",
+              "text": "Sephora appears with department stores and online retailers in an answer about where men buy perfume. A list of outlets, not evidence of a purchase."
+            },
+            {
+              "tag": "ID 2105133 · Lip-care content",
+              "title": "Affiliate programmes",
+              "text": "Sephora and Ulta Beauty appear as affiliate options for monetising content, not as consumer purchase decisions."
+            },
+            {
+              "tag": "ID 1909349 · Retail branding",
+              "title": "Business example",
+              "text": "Sephora is one example within a discussion of experiential retail and omnichannel strategy."
+            },
+            {
+              "tag": "ID 2733926 · Dior blush",
+              "title": "Promotional content",
+              "text": "Sephora appears in a promotional-content request and its user-supplied hashtags around a Dior product."
+            },
+            {
+              "tag": "ID 1565355 · Gift ideas",
+              "title": "Product advice",
+              "text": "The user asks for Sephora product suggestions for a friend; Sephora is the subject of the request, not an AI addition."
+            }
+          ],
+          "caption": "Analytical descriptions, not quotations."
+        },
+        {
+          "type": "note",
+          "label": "What has and has not been classified",
+          "text": "A shortlist of 45 prioritised examples was selected to illustrate the kinds of relationship observed, such as retail outlet choices, general lists, affiliates, marketing content and business examples. The full set of 645 relationships has not been reliably partitioned into recommendation, comparison or alternative counts, and model-proposed labels from an unvalidated classification test are not used. No population percentages are drawn from the five cases above or the 45-example shortlist."
+        }
+      ]
+    },
+    {
+      "id": "s9",
+      "nav": "9 · Progression",
+      "eyebrow": "Section 9 · Quantify the recorded conversation progression",
+      "title": "In ==179 of 281 conversations==, no user message follows Sephora's first mention",
+      "lead": "This section counts what happens in the recorded sequence after Sephora first appears. A follow-up is not continued brand interest, and the absence of one is not a purchase, a conversion or satisfaction: the transcript simply ends before another user message.",
+      "blocks": [
+        {
+          "type": "flowtree",
+          "title": "Figure 9.1 · Recorded paths after Sephora's first mention (unit: conversation records; 11 counted paths)",
+          "root": {
+            "value": "281",
+            "label": "Matched conversation records"
+          },
+          "branches": [
+            {
+              "value": 176,
+              "label": "User named Sephora first",
+              "groups": [
+                {
+                  "label": "No later user turn",
+                  "value": 134,
+                  "items": [
+                    {
+                      "label": "No new brand from the AI later",
+                      "value": 130,
+                      "tone": ""
+                    },
+                    {
+                      "label": "AI later introduces a new detected brand",
+                      "value": 4,
+                      "tone": "warn"
+                    }
+                  ]
+                },
+                {
+                  "label": "Next user turn names no detected brand",
+                  "value": 37,
+                  "items": [
+                    {
+                      "label": "No new brand from the AI later",
+                      "value": 35,
+                      "tone": ""
+                    },
+                    {
+                      "label": "AI later introduces a new detected brand",
+                      "value": 2,
+                      "tone": "warn"
+                    }
+                  ]
+                },
+                {
+                  "label": "Next user turn names another detected brand",
+                  "value": 2,
+                  "items": [
+                    {
+                      "label": "No new brand from the AI later",
+                      "value": 2,
+                      "tone": ""
+                    }
+                  ]
+                },
+                {
+                  "label": "Next user turn names Sephora again",
+                  "value": 3,
+                  "items": [
+                    {
+                      "label": "No new brand from the AI later",
+                      "value": 3,
+                      "tone": ""
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "value": 105,
+              "label": "AI named Sephora first",
+              "groups": [
+                {
+                  "label": "No later user turn",
+                  "value": 45,
+                  "items": [
+                    {
+                      "label": "No new brand from the AI later",
+                      "value": 45,
+                      "tone": ""
+                    }
+                  ]
+                },
+                {
+                  "label": "Next user turn names no detected brand",
+                  "value": 57,
+                  "items": [
+                    {
+                      "label": "No new brand from the AI later",
+                      "value": 42,
+                      "tone": ""
+                    },
+                    {
+                      "label": "AI later introduces a new detected brand",
+                      "value": 15,
+                      "tone": "warn"
+                    }
+                  ]
+                },
+                {
+                  "label": "Next user turn names another detected brand",
+                  "value": 2,
+                  "items": [
+                    {
+                      "label": "No new brand from the AI later",
+                      "value": 2,
+                      "tone": ""
+                    }
+                  ]
+                },
+                {
+                  "label": "Next user turn names Sephora again",
+                  "value": 1,
+                  "items": [
+                    {
+                      "label": "No new brand from the AI later",
+                      "value": 1,
+                      "tone": ""
+                    }
+                  ]
+                }
+              ]
+            }
+          ],
+          "caption": "Every bar is one of the 11 counted path combinations. \"Detected brand\" means a name from the curated 43-name inventory. Follow-up topics, brand relevance and causal brand influence were not measured with a verified semantic transition label."
+        },
+        {
+          "type": "composition",
+          "title": "Figure 9.2 · What the next user message contains, both branches (unit: conversation records, total 281)",
+          "items": [
+            {
+              "label": "No later user turn",
+              "value": 179,
+              "display": "179 (63.7%)",
+              "color": "muted"
+            },
+            {
+              "label": "No detected brand in next user turn",
+              "value": 94,
+              "display": "94 (33.5%)",
+              "color": "sky"
+            },
+            {
+              "label": "Another detected brand",
+              "value": 4,
+              "display": "4",
+              "color": "ink"
+            },
+            {
+              "label": "Sephora again",
+              "value": 4,
+              "display": "4",
+              "color": "lime"
+            }
+          ],
+          "caption": "102 conversations have a later user message. When that message names no detected brand, the topic has not necessarily ended and the user has not necessarily lost interest."
+        },
+        {
+          "type": "bars",
+          "title": "Figure 9.3 · Brands the AI newly introduces after Sephora's first mention (unit: conversations, of the 21 with any)",
+          "value_width": "50px",
+          "items": [
+            {
+              "label": "Amazon",
+              "value": 6,
+              "display": "6"
+            },
+            {
+              "label": "Nike",
+              "value": 5,
+              "display": "5"
+            },
+            {
+              "label": "Ulta Beauty",
+              "value": 4,
+              "display": "4"
+            },
+            {
+              "label": "Saks Fifth Avenue",
+              "value": 4,
+              "display": "4"
+            },
+            {
+              "label": "Dior",
+              "value": 3,
+              "display": "3"
+            },
+            {
+              "label": "Prada",
+              "value": 3,
+              "display": "3"
+            },
+            {
+              "label": "Walmart",
+              "value": 3,
+              "display": "3"
+            },
+            {
+              "label": "Shiseido",
+              "value": 3,
+              "display": "3"
+            }
+          ],
+          "caption": "A descriptive inventory, not a causal influence chart. 34 different names appear across the 21 conversations; the 26 not shown appear in one or two each. Limited to the 43-name inventory."
+        },
+        {
+          "type": "table",
+          "title": "Figure 9.4 · Recorded paths of the English-language example conversations (unit: one conversation per row)",
+          "columns": [
+            {
+              "key": "id",
+              "label": "Record",
+              "kind": "mono"
+            },
+            {
+              "key": "m",
+              "label": "Messages",
+              "kind": "num"
+            },
+            {
+              "key": "f",
+              "label": "First Sephora mention"
+            },
+            {
+              "key": "x",
+              "label": "Next user message"
+            },
+            {
+              "key": "b",
+              "label": "Brands the AI introduces later"
+            }
+          ],
+          "rows": [
+            {
+              "id": "…e54d138ffa3b",
+              "m": "8",
+              "f": "AI, message 4",
+              "x": "Names no detected brand",
+              "b": "None"
+            },
+            {
+              "id": "3654303",
+              "m": "10",
+              "f": "AI, message 2",
+              "x": "Names no detected brand",
+              "b": "Chanel, Kiehl's, L'Oréal, Prada, Tom Ford"
+            },
+            {
+              "id": "1909349",
+              "m": "32",
+              "f": "AI, message 18",
+              "x": "Names another detected brand",
+              "b": "None"
+            },
+            {
+              "id": "3743379",
+              "m": "22",
+              "f": "AI, message 14",
+              "x": "Names no detected brand",
+              "b": "Charlotte Tilbury, Dior, Drunk Elephant, Fenty Beauty, Glossier, Gucci, Paula's Choice, Prada, The Ordinary, Tom Ford"
+            },
+            {
+              "id": "2105133",
+              "m": "10",
+              "f": "AI, message 10",
+              "x": "None recorded",
+              "b": "None"
+            },
+            {
+              "id": "2733926",
+              "m": "2",
+              "f": "User, message 1",
+              "x": "None recorded",
+              "b": "Dior"
+            },
+            {
+              "id": "1565355",
+              "m": "2",
+              "f": "User, message 1",
+              "x": "None recorded",
+              "b": "None"
+            }
+          ],
+          "caption": "Structure only, taken from the indexed analysis. Only the first record is reproduced as a transcript (Figure 3.2). Brand detection is literal and limited to the 43-name inventory: in 2733926 the user's hashtag #diorblush is not detected as Dior, so Dior counts as introduced by the AI."
+        }
+      ]
+    },
+    {
+      "id": "s10",
+      "nav": "10 · References",
+      "eyebrow": "Section 10 · Check references and citations in Sephora-related conversations",
+      "title": "Only ==4 of 1,212 AI responses== contain a Sephora web address",
+      "lead": "This section looks for reference URLs, source panels and links in the recorded AI responses, and separates the availability of a link from the quality of a citation.",
+      "blocks": [
+        {
+          "type": "bars",
+          "title": "Figure 10.1 · AI responses with references: nested indicators (unit: AI responses)",
+          "value_width": "70px",
+          "items": [
+            {
+              "label": "All recorded AI responses",
+              "value": 1212,
+              "display": "1,212"
+            },
+            {
+              "label": "With any URL or source reference",
+              "value": 31,
+              "display": "31"
+            },
+            {
+              "label": "With a Sephora-domain URL",
+              "value": 4,
+              "display": "4",
+              "tone": "warn"
+            }
+          ],
+          "caption": "Each line is a subset of the one above, not a separate group. The 31 responses fall in 13 conversations and the 4 in 3 conversations."
+        },
+        {
+          "type": "table",
+          "title": "Figure 10.2 · Reference types, kept separate (unit: URL entries and AI responses)",
+          "columns": [
+            {
+              "key": "t",
+              "label": "Reference type"
+            },
+            {
+              "key": "e",
+              "label": "URL entries",
+              "kind": "num"
+            },
+            {
+              "key": "r",
+              "label": "AI responses",
+              "kind": "num"
+            },
+            {
+              "key": "s",
+              "label": "Sephora-domain entries",
+              "kind": "num"
+            },
+            {
+              "key": "m",
+              "label": "What it is"
+            }
+          ],
+          "rows": [
+            {
+              "t": "Text URL candidate",
+              "e": "66",
+              "r": "26",
+              "s": "2",
+              "m": "A URL-like string found in the answer text"
+            },
+            {
+              "t": "Source panel entry",
+              "e": "129",
+              "r": "5",
+              "s": "2",
+              "m": "A URL listed in a structured source panel attached to the answer"
+            },
+            {
+              "t": "Response hyperlink",
+              "e": "13",
+              "r": "3",
+              "s": "0",
+              "m": "A hyperlink embedded in the answer"
+            }
+          ],
+          "caption": "The types are not interchangeable and can refer to overlapping URLs, so they are not added together as \"confirmed AI citations\". The 129 source-panel entries come from only 5 responses. Across all types there are 154 distinct reference URLs."
+        },
+        {
+          "type": "table",
+          "title": "Figure 10.3 · Where the 31 reference-bearing responses come from (unit: AI responses)",
+          "columns": [
+            {
+              "key": "c",
+              "label": "Collection"
+            },
+            {
+              "key": "v",
+              "label": "Responses with references",
+              "kind": "num"
+            }
+          ],
+          "rows": [
+            {
+              "c": "Collection A",
+              "v": "26"
+            },
+            {
+              "c": "Collection B",
+              "v": "0"
+            },
+            {
+              "c": "Public-sharing subset",
+              "v": "5"
+            }
+          ]
+        },
+        {
+          "type": "text",
+          "paragraphs": [
+            "The four Sephora-domain URLs point to a Sephora brand page for Tom Ford Beauty, the Sephora homepage, and (twice, in source panels) a Sephora product listing page. The most frequent domain among extracted references is `www.amazon.com`, with 49 of the 208 URL entries. A domain count is an observed URL tally; it does not show recommendation strength, citation authority or third-party endorsement."
+          ]
+        },
+        {
+          "type": "skyband",
+          "title": "Too sparse for a ==citation-performance== study",
+          "text": "The linked websites were not checked for being live, accurate or influential. With 4 Sephora-domain responses and source panels in only 5 responses, the Sephora subset cannot support a meaningful comparison of how different platforms cite Sephora."
+        }
+      ]
+    },
+    {
+      "id": "s11",
+      "nav": "11 · Synthesis",
+      "eyebrow": "Section 11 · Verified synthesis and research limitations",
+      "title": "Sephora appears in ==many kinds of AI conversation==, not one conversion funnel",
+      "lead": "The bottom line, stated strictly at the level the data demonstrates.",
+      "blocks": [
+        {
+          "type": "table",
+          "title": "Figure 11.1 · Research recap",
+          "columns": [
+            {
+              "key": "q",
+              "label": "Question"
+            },
+            {
+              "key": "o",
+              "label": "Observed"
+            },
+            {
+              "key": "u",
+              "label": "Unit"
+            },
+            {
+              "key": "n",
+              "label": "What it does not show"
+            }
+          ],
+          "rows": [
+            {
+              "q": "**Discovery**",
+              "o": "206 initial + 106 additional = 312 candidates; 31 unrelated excluded; 281 analysed, 278 distinct exact dialogues",
+              "u": "Conversation records",
+              "n": "How often Sephora is discussed with AI generally"
+            },
+            {
+              "q": "**First mention**",
+              "o": "176 user-first, 105 AI-first",
+              "u": "Conversation records",
+              "n": "Whether an AI mention was unsolicited or a recommendation"
+            },
+            {
+              "q": "**Co-occurrence**",
+              "o": "43 names, 645 conversation-brand records; Estée Lauder 79, Amazon 76, Ulta Beauty 49",
+              "u": "Conversation-brand records",
+              "n": "Competition, recommendation or endorsement"
+            },
+            {
+              "q": "**Sequence position**",
+              "o": "478 brands first appear in the same message as Sephora's first mention, 83 before, 84 after",
+              "u": "Conversation-brand records",
+              "n": "The meaning of each relationship"
+            },
+            {
+              "q": "**Follow-up**",
+              "o": "179 no later user turn; 94 next turn with no detected brand; 4 another brand; 4 Sephora again",
+              "u": "Conversation records",
+              "n": "Topic continuity, intent, purchase or influence"
+            },
+            {
+              "q": "**References**",
+              "o": "31 of 1,212 AI responses with URLs or sources; 4 with a Sephora-domain URL",
+              "u": "AI responses",
+              "n": "Citation quality or effectiveness"
+            }
+          ]
+        },
+        {
+          "type": "bullets",
+          "title": "Bottom-line findings",
+          "items": [
+            "Sephora appears in product discovery, retailer selection, affiliate monetisation, business research, promotional copy and creative or technical work. The evidence does not support treating these as one conversion funnel.",
+            "Users introduce Sephora more often than the AI does (176 against 105). In the examples reviewed, AI-introduced mentions place Sephora as one name among several outlets or examples.",
+            "Estée Lauder, Amazon and Ulta Beauty appear most often, but for different reasons: Estée Lauder mainly through repeated user-written advertising prompts, Amazon and Ulta Beauty mainly as retailers the AI names alongside Sephora. Not all of them are competitor recommendations.",
+            "The progression counts give a reproducible structural basis for the flowchart. On their own they do not prove topic continuity, commercial intent or brand influence.",
+            "Structured citations and direct Sephora URLs are sparse, so no conclusion about citation effectiveness is possible from these references."
+          ]
+        },
+        {
+          "type": "note",
+          "label": "Verification",
+          "text": "The research team's 17 evidence and consistency checks passed on the 312-record candidate set. After the 31 exclusions, every figure in this report was recounted from the same analysis files; the path counts still reconcile to 281 conversations in 11 path combinations. These checks confirm that records and summaries agree; they do not establish the semantic accuracy of unvalidated topic or recommendation labels."
+        },
+        {
+          "type": "cards",
+          "title": "Not established in this study",
+          "columns": 3,
+          "items": [
+            {
+              "tag": "Not measured",
+              "title": "Category proportions",
+              "text": "A validated percentage split of the 281 conversations by purpose."
+            },
+            {
+              "tag": "Not measured",
+              "title": "Relationship meaning",
+              "text": "Recommendation, comparison or alternative counts across the 645 brand relationships."
+            },
+            {
+              "tag": "Not measured",
+              "title": "Influence and outcome",
+              "text": "Causal brand influence, purchases, conversions or citation effectiveness."
+            }
+          ]
+        },
+        {
+          "type": "skyband",
+          "title": "What the report describes",
+          "text": "Observed conversations from multiple collections of publicly available AI conversations and shared interactions. Not all AI users, not all Sephora customers, and not current real-world buying behaviour."
+        }
+      ]
+    }
+  ]
+}
+</script>
+
+<!-- ============================ RENDERER (no need to edit) ============================ -->
+<script>
+(function () {
+  var LOGO = "<svg role=\"img\" aria-label=\"WLDM\" xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 192.667 56.652\" height=\"32\" style=\"display:block;width:auto\" > <g> <path d=\"M24.201,29.237s0,0,0,.002c-.002-.004-.004-.007-.007-.01-.006-.007-.008-.009.006.008\" fill=\"#2a2b29\" stroke-width=\"0\" /> <path d=\"M44.009,31.761c-.78.574-1.634,1.05-2.467,1.55-1.39.836-2.968,1.782-4.633,2.778-3.224,1.775-19.742,10.316-20.936,10.919-4.072,2.057-6.375.766-7.245-2.338-.313-1.121-.37-2.319-.496-3.487-.244-2.25-.457-4.504-.676-6.757-.217-2.219-.428-4.439-.639-6.659-.394-4.132-.787-8.264-1.18-12.396-.068-.717-.134-1.434-.174-1.86.059-1.247.293-2.141.825-2.949,1.101-1.673,3.129-2.326,5.077-1.525,1.457.598,2.869,1.307,4.292,1.986,3.982,1.9,7.964,3.798,11.935,5.718,3.703,1.792,7.392,3.612,11.09,5.416,1.417.691,2.462,1.729,2.862,3.276.539,2.081-.122,3.838-1.735,5.187-.97.81-2.067,1.468-3.114,2.186-2.814,1.928-13.501,8.263-16.105,9.748-.645.368-3.065,1.774-3.839,1.865-1.513.179-2.88-.557-3.65-1.92-.538-.952-.682-2.001-.844-3.053-.565-3.684-1.142-7.366-1.707-11.051-.527-3.434-1.077-6.865-1.547-10.307-.217-1.592.328-2.941,1.753-3.819,1.081-.666,2.241-.62,3.37-.184,2.643,1.021,5.273,2.077,7.899,3.141,4.373,1.773,8.74,3.562,13.109,5.346,1.612.659,2.654,2.166,2.673,4.119-.019,1.193-.684,2.33-1.792,3.21-2.21,1.756-15.087,10.037-15.245,10.129-1.181.68-2.067,1.01-3.054.406-.79-.484-1.294-1.208-1.505-2.092-.37-1.556-.686-3.124-1.019-4.689-.699-3.285-1.397-6.571-2.089-9.858-.151-.715-.31-1.431-.407-2.154-.208-1.547.773-2.976,2.222-3.284.189-.04.385-.047.662-.079.26.048.608.074.93.177,3.404,1.092,6.803,2.197,10.205,3.295,1.783.575,3.569,1.138,5.35,1.716,1.398.454,2.279,1.675,2.213,3.078-.044.955-.494,1.723-1.186,2.357-2.074,1.899-8.006,5.981-11.405,7.953l.002.027c-.582.201-1.22.053-1.709-.437-.471-.473-.666-1.077-.835-1.701-.866-3.197-1.742-6.391-2.608-9.588-.071-.262-.091-.538-.134-.808.046-1.516,1.192-2.382,2.662-2.032,3.411.812,6.823,1.617,10.241,2.4,1.645.377,2.218,2.18,1.043,3.471-.723.794-3.655,2.659-5.678,4.001-.869.468-1.737.868-1.977.808-.533-.133-.716-.566-.879-1.042-.555-1.619-1.139-3.228-1.706-4.842-.044-.125-.073-.254-.101-.384-.061-.28-.03-.575.109-.826.229-.415.677-.636,1.221-.554,1.851.282,3.702.565,5.552.85.894.138,1.262,1.027.7,1.753-.313.405-2.742,1.697-2.938,1.805-.102.056-.208.115-.32.144-.217.056-.393-.059-.534-.214-.174-.192-.314-.418-.442-.641-.115-.204-.217-.414-.311-.628-.071-.163-.17-.378-.072-.543.083-.139.253-.163.399-.173.055-.004.111-.006.167-.004.369.009.734.054,1.102.089.146.014.255.109.262.262.006.132-.126.275-.262.262-.117-.011-.299-.056-.476-.029-.172.025-.244.108-.203.481.016.144.071.256.135.36.091.147.272.263.764.009.839-.432,1.229-.751,1.43-1.054.27-.405-.139-.825-.605-.884-1.04-.132-2.081-.252-2.922-.352-.751-.046-1.007.267-.924.729.25,1.389.707,2.471,1.116,3.445.16.383.453.506.746.358.939-.488,3.922-1.988,5.287-3.364.939-.947.352-2.286-.947-2.565-1.04-.223-2.082-.431-3.125-.633-1.604-.311-3.208-.619-4.816-.911-1.07-.194-1.895.483-1.928,1.535.054.256.088.518.164.767.758,2.492,1.515,4.984,2.295,7.469.103.328.297.65.524.91.479.552,1.076.462,1.707.099,1.138-.656,4.824-2.997,4.977-3.162,0,0,2.038-1.233,2.715-1.89.508-.493,1.036-.979,1.464-1.537,1.087-1.417.442-3.482-1.21-3.969-1.074-.316-2.152-.614-3.23-.915-3.257-.909-6.512-1.826-9.775-2.708-.438-.118-.938-.141-1.385-.064-1.009.174-1.897,1.123-1.868,2.503.025.227.028.459.079.679.404,1.724.813,3.446,1.229,5.167.607,2.508,1.227,5.014,1.828,7.523.154.643.387,1.238.796,1.764.737.947,1.866,1.01,2.874.352,1.493-.974,9.268-5.778,11.497-7.679.739-.63,1.513-1.236,2.159-1.953.833-.923,1.134-2.046.79-3.287-.386-1.395-1.357-2.182-2.677-2.659-3.106-1.12-6.199-2.278-9.301-3.41-2.78-1.015-5.563-2.021-8.349-3.02-.696-.25-1.417-.375-2.156-.19-1.581.397-2.507,1.632-2.542,3.359.022.228.028.458.068.682.287,1.607.577,3.215.875,4.821.858,4.629,1.724,9.257,2.58,13.887.153.83.388,1.614.905,2.304,1.108,1.479,2.702,1.474,4.332.604,2.212-1.18,10.578-6.194,13.198-7.92,1.671-1.1,3.231-2.362,4.835-3.56,1.187-.887,1.904-2.06,1.998-3.561.122-1.927-.955-3.639-2.795-4.48-2.088-.955-4.177-1.911-6.271-2.856-2.927-1.321-5.855-2.642-8.79-3.944-2.882-1.28-5.77-2.55-8.667-3.798-1.226-.528-2.493-.624-3.709.03-1.541.831-2.13,2.216-2.147,4.127.167,1.371.355,2.96.555,4.547.236,1.881.486,3.761.724,5.642.268,2.121.527,4.244.797,6.365.256,2.019.518,4.037.784,6.055.175,1.325.325,2.655.555,3.971.22,1.261.829,2.328,1.909,3.06,1.366.927,3.508.683,5.045-.199,2.953-1.693,18.973-10.808,23.128-13.477.619-.397,1.234-.857,1.71-1.409,1.33-1.545,1.727-3.325,1.012-5.275-.472-1.286-1.346-2.263-2.549-2.901-3.22-1.709-6.458-3.387-9.689-5.077-2.502-1.308-5-2.624-7.508-3.919-3.138-1.62-6.285-3.223-9.429-4.832-1.211-.619-2.408-1.269-3.64-1.842-1.254-.582-2.567-.762-3.894-.228-1.84.741-3.029,2.719-2.92,4.818.08,1.198.16,2.396.242,3.594.221,3.252.443,6.504.666,9.756.188,2.739.375,5.477.566,8.215.271,3.856.535,7.713.831,11.567.056.723.191,1.454.401,2.147.376,1.244,1.108,2.274,2.252,2.919,1.474.831,2.979.733,4.454-.045,1.501-.791,2.66-1.375,4.051-2.125,2.088-1.126,4.16-2.42,8.571-4.582-.891.534-2.526,1.544-2.526,1.544-.016.01-7.957,4.756-11.903,7.135-2.559,1.543-5.813.56-7.166-2.176-.471-.951-.712-1.954-.749-3.004-.128-3.567-.24-7.134-.358-10.702-.18-5.396-.361-10.792-.538-16.189-.012-.365-.002-.732-.002-1.098h-.028c-.104-3.075-.212-6.15-.309-9.226-.047-1.506.264-2.916,1.255-4.102,1.27-1.521,3.257-2.076,5.116-1.377.808.304,1.578.723,2.339,1.136,4.328,2.353,8.653,4.712,12.972,7.084,4.469,2.453,8.926,4.929,13.394,7.385,1.874,1.029,3.76,2.036,5.642,3.05,1.48.797,2.583,1.927,3.06,3.571.643,2.213-.193,4.657-2.104,6.064M47.58,24.238c-.703-.936-1.621-1.596-2.626-2.165-2.208-1.251-4.414-2.506-6.609-3.78-4.765-2.766-9.521-5.55-14.285-8.319-4.744-2.759-9.492-5.508-14.239-8.262-.88-.51-1.752-1.028-2.754-1.286C4.751-.168,2.659.738,1.53,2.836c-.597,1.108-.787,2.304-.787,3.543,0,7.025,0,14.05,0,21.075h.003c0,1.018,0,2.036,0,3.055,0,5.972-.007,11.944,0,17.917,0,1.337.175,2.653.823,3.852.926,1.712,2.354,2.635,4.327,2.642,1.203.004,2.29-.411,3.314-.993,1.769-1.006,3.525-2.034,5.284-3.058,3.014-1.756,6.027-3.514,9.041-5.271l.002.014c1.965-1.146,6.533-3.823,8.5-4.968,4.367-2.542,8.738-5.079,13.11-7.613.859-.498,1.635-1.088,2.271-1.857,1.702-2.055,1.763-4.805.162-6.936\" fill=\"#2a2b29\" stroke-width=\"0\" /> <\/g> <g> <polygon points=\"61.717 41.257 53.012 13.911 57.504 13.911 64.54 35.891 64.699 35.891 72.291 13.911 76.623 13.911 84.255 35.891 84.493 35.891 91.21 13.911 95.583 13.911 86.918 41.257 81.83 41.257 74.357 20.23 74.199 20.23 66.805 41.257 61.717 41.257\" fill=\"#2a2b29\" stroke-width=\"0\" /> <polygon points=\"101.704 41.257 101.704 13.911 106.116 13.911 106.116 37.521 120.902 37.521 120.902 41.257 101.704 41.257\" fill=\"#2a2b29\" stroke-width=\"0\" /> <path d=\"M126.903,41.256V13.91h10.176c2.676,0,4.862.106,6.559.318,1.695.212,3.04.603,4.034,1.172.994.57,1.709,1.365,2.146,2.385.437,1.02.722,2.332.855,3.935.133,1.604.199,3.558.199,5.863s-.066,4.26-.199,5.863c-.133,1.603-.418,2.915-.855,3.935s-1.152,1.815-2.146,2.385c-.994.57-2.339.961-4.034,1.172-1.697.213-3.883.318-6.559.318h-10.176ZM131.316,37.6h5.048c1.933,0,3.537-.026,4.809-.08,1.272-.053,2.272-.232,3.002-.536.727-.305,1.258-.815,1.589-1.531.332-.715.542-1.702.636-2.961.093-1.258.14-2.895.14-4.909s-.055-3.65-.16-4.909c-.106-1.258-.325-2.245-.655-2.961-.332-.715-.869-1.226-1.61-1.53-.742-.305-1.743-.484-3.001-.537-1.259-.052-2.842-.08-4.75-.08h-5.048v20.034Z\" fill=\"#2a2b29\" stroke-width=\"0\" /> <polygon points=\"185.453 13.91 175.118 35.135 174.879 35.135 164.465 13.91 158.781 13.91 158.781 41.256 162.954 41.256 162.954 20.429 163.114 20.429 173.17 41.256 176.588 41.256 186.763 20.429 186.882 20.429 186.882 41.256 191.176 41.256 191.176 13.91 185.453 13.91\" fill=\"#2a2b29\" stroke-width=\"0\" /> <\/g> <\/svg>";
+
+  function esc(s) {
+    return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  }
+  // Inline formatting. Everything is escaped first, so HTML in the data is shown as text.
+  function fmt(s, dark) {
+    var t = esc(s);
+    t = t.replace(/`([^`]+)`/g, '<code>$1</code>');
+    t = t.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+    t = t.replace(/==([^=]+)==/g, dark ? '<span class="lime">$1</span>' : '<span class="u-lm">$1</span>');
+    t = t.replace(/\[([^\]]+)\]\((https?:\/\/[^)\s]+)\)/g, '<a href="$2" target="_blank" rel="noreferrer">$1</a>');
+    return t;
+  }
+  function tone(t) { return t === 'good' ? 'good' : (t === 'warn' ? 'warn' : ''); }
+  var COLORS = { ink: 'var(--ink)', sky: 'var(--bl)', lime: 'var(--ny)', muted: 'var(--tp)', warn: 'var(--warn)', good: 'var(--good)' };
+  function color(c) {
+    if (COLORS[c]) return COLORS[c];
+    return /^#[0-9a-fA-F]{3,8}$/.test(String(c)) ? c : 'var(--tp)';
+  }
+  function title(b) { return b.title ? '<h3 class="bt">' + fmt(b.title) + '</h3>' : ''; }
+  function caption(b) { return b.caption ? '<p class="caption">' + fmt(b.caption) + '</p>' : ''; }
+  function rowStyle(b) { return b.value_width ? ' style="grid-template-columns:minmax(120px,280px) 1fr ' + esc(b.value_width) + '"' : ''; }
+  function sum(a) { return (a || []).reduce(function (x, y) { return x + (Number(y) || 0); }, 0); }
+
+  function cell(c, v) {
+    var val = v == null ? '' : v;
+    if (c.kind === 'num') return '<td class="num" style="text-align:right">' + esc(val) + '</td>';
+    if (c.kind === 'mono') return '<td class="num" style="white-space:normal">' + esc(val) + '</td>';
+    if (c.kind === 'sev') return '<td><span class="sev ' + esc(String(val).toLowerCase().replace(/[^a-z]/g, '')) + '">' + esc(val) + '</span></td>';
+    if (c.kind === 'chip') return '<td><span class="classchip">' + esc(val) + '</span></td>';
+    return '<td>' + fmt(val) + '</td>';
+  }
+
+  var BLOCKS = {
+    text: function (b) { return title(b) + (b.paragraphs || []).map(function (p) { return '<p>' + fmt(p) + '</p>'; }).join(''); },
+    bullets: function (b) { return title(b) + '<ul class="clean">' + (b.items || []).map(function (i) { return '<li>' + fmt(i) + '</li>'; }).join('') + '</ul>'; },
+    scorecards: function (b) {
+      return title(b) + '<div class="scorecards">' + (b.items || []).map(function (i) {
+        return '<div class="score"><div class="v ' + tone(i.tone) + '">' + esc(i.value) + '</div><div class="k">' + esc(i.label) + '</div>' + (i.sub ? '<div class="sub">' + fmt(i.sub) + '</div>' : '') + '</div>';
+      }).join('') + '</div>';
+    },
+    proof: function (b) {
+      return '<div class="proof-wrap">' + title(b) + '<div class="proof">' + (b.items || []).map(function (i) {
+        return '<div class="pi"><div class="pv">' + esc(i.value) + '</div><div class="pk">' + esc(i.label) + '</div></div>';
+      }).join('') + '</div>' + caption(b) + '</div>';
+    },
+    table: function (b) {
+      var cols = b.columns || [];
+      var head = cols.map(function (c) { return '<th' + (c.kind === 'num' ? ' style="text-align:right"' : '') + '>' + esc(c.label) + '</th>'; }).join('');
+      var rows = (b.rows || []).map(function (r) { return '<tr>' + cols.map(function (c) { return cell(c, r[c.key]); }).join('') + '</tr>'; }).join('');
+      return title(b) +
+        (b.searchable ? '<input class="search" data-search placeholder="' + esc(b.search_placeholder || 'Filter rows') + '">' : '') +
+        '<div class="tbl-wrap"><table><thead><tr>' + head + '</tr></thead><tbody>' + rows + '</tbody></table></div>' +
+        caption(b);
+    },
+    code: function (b) { return title(b) + (b.label ? '<h4>' + esc(b.label) + '</h4>' : '') + '<pre class="code">' + esc(b.code) + '</pre>' + caption(b); },
+    compare: function (b) {
+      var sides = [[b.left, 'warn'], [b.right, 'good']];
+      return title(b) + '<div class="grid2">' + sides.map(function (p) {
+        var s = p[0]; if (!s) return '';
+        var t = s.tone || p[1];
+        return '<div class="card"><h4 style="color:var(' + (t === 'good' ? '--good' : '--warn') + ')">' + esc(s.label) + '</h4><pre class="code">' + esc(s.code) + '</pre>' + (s.note ? '<p class="caption">' + fmt(s.note) + '</p>' : '') + '</div>';
+      }).join('') + '</div>';
+    },
+    bars: function (b) {
+      var items = b.items || [];
+      var max = b.max || Math.max.apply(null, [1].concat(items.map(function (i) { return Number(i.value) || 0; })));
+      return title(b) + '<div class="hb-wide card">' + items.map(function (i) {
+        var pct = Math.max(0, Math.min(100, (Number(i.value) || 0) / max * 100));
+        return '<div class="hb-row"' + rowStyle(b) + '><div class="hb-label" title="' + esc(i.label) + '">' + esc(i.label) + '</div><div class="hb-track"><div class="hb-fill ' + (i.tone === 'warn' ? 'warn' : '') + '" style="width:' + pct + '%"></div></div><div class="hb-val">' + esc(i.display != null ? i.display : i.value) + '</div></div>';
+      }).join('') + '</div>' + caption(b);
+    },
+    composition: function (b) {
+      var items = b.items || [];
+      return title(b) + '<div class="comp-bar">' + items.map(function (i) {
+        return '<div style="flex:' + (Number(i.value) || 0) + ';background:' + color(i.color) + '" title="' + esc(i.label) + '"></div>';
+      }).join('') + '</div><div class="comp-legend">' + items.map(function (i) {
+        return '<div class="comp-legend-item"><span class="comp-swatch" style="background:' + color(i.color) + '"></span>' + esc(i.label) + ' &middot; ' + esc(i.display != null ? i.display : i.value) + '</div>';
+      }).join('') + '</div>' + caption(b);
+    },
+    stacked: function (b) {
+      var legend = b.legend || [];
+      var rows = b.rows || [];
+      var max = Math.max.apply(null, [1].concat(rows.map(function (r) { return sum(r.segments); })));
+      var key = '<div class="comp-legend tight">' + legend.map(function (l) {
+        return '<div class="comp-legend-item"><span class="comp-swatch" style="background:' + color(l.color) + '"></span>' + esc(l.label) + '</div>';
+      }).join('') + '</div>';
+      return title(b) + key + '<div class="hb-wide card">' + rows.map(function (r) {
+        var total = sum(r.segments);
+        var width = b.normalize ? 100 : total / max * 100;
+        var segs = (r.segments || []).map(function (v, k) {
+          return '<div style="flex:' + (Number(v) || 0) + ';background:' + color(legend[k] && legend[k].color) + '" title="' + esc((legend[k] ? legend[k].label + ': ' : '') + v) + '"></div>';
+        }).join('');
+        return '<div class="hb-row"' + rowStyle(b) + '><div class="hb-label" title="' + esc(r.label) + '">' + esc(r.label) + '</div><div class="hb-track"><div class="st-fill" style="width:' + width + '%">' + segs + '</div></div><div class="hb-val">' + esc(r.display != null ? r.display : total) + '</div></div>';
+      }).join('') + '</div>' + caption(b);
+    },
+    cards: function (b) {
+      var n = Math.max(1, Math.min(4, Number(b.columns) || 3));
+      return title(b) + '<div class="responsive-grid" style="grid-template-columns:repeat(' + n + ',1fr);gap:16px">' + (b.items || []).map(function (i) {
+        return '<div class="card">' + (i.tag ? '<span class="tag">' + esc(i.tag) + '</span>' : '') + '<h3>' + fmt(i.title) + '</h3><p style="font-size:13.5px;margin-bottom:0">' + fmt(i.text) + '</p></div>';
+      }).join('') + '</div>' + caption(b);
+    },
+
+    sequence: function (b) {
+      return title(b) + '<div class="seq">' + (b.items || []).map(function (i) {
+        var role = i.role === 'assistant' ? 'AI' : (i.role === 'user' ? 'User' : '');
+        var cls = 'seq-row' + (i.mark ? ' mark' : '') + (i.role === 'gap' ? ' gap' : '');
+        return '<div class="' + cls + '"><div class="seq-pos">' + esc(i.pos || '') + '</div><div>' + (role ? '<span class="seq-role ' + esc(i.role) + '">' + role + '</span>' : '') + '</div><div class="seq-text">' + (i.mark ? '<span class="classchip" style="margin-bottom:6px">' + esc(i.mark === true ? 'First Sephora mention' : i.mark) + '</span><br>' : '') + fmt(i.text) + '</div></div>';
+      }).join('') + '</div>' + caption(b);
+    },
+    flowtree: function (b) {
+      var r = b.root || {};
+      return title(b) + '<div class="ft"><div class="ft-root"><span class="ft-v">' + esc(r.value) + '</span><span class="ft-k">' + esc(r.label) + '</span></div>' +
+        '<div class="grid2 ft-branches">' + (b.branches || []).map(function (br) {
+          var tot = Number(br.value) || 1;
+          return '<div class="card ft-branch"><div class="ft-head"><span class="ft-v">' + esc(br.value) + '</span><span class="ft-k">' + esc(br.label) + '</span></div>' +
+            (br.groups || []).map(function (g) {
+              return '<div class="ft-group"><div class="ft-gh"><span>' + fmt(g.label) + '</span><span class="ft-gv">' + esc(g.value) + '</span></div>' +
+                (g.items || []).map(function (it) {
+                  var pct = Math.max(0, Math.min(100, (Number(it.value) || 0) / tot * 100));
+                  return '<div class="ft-item"><div class="ft-il">' + fmt(it.label) + '</div><div class="hb-track"><div class="hb-fill' + (it.tone === 'warn' ? ' warn' : '') + '" style="width:' + pct + '%"></div></div><div class="hb-val">' + esc(it.value) + '</div></div>';
+                }).join('') + '</div>';
+            }).join('') + '</div>';
+        }).join('') + '</div></div>' + caption(b);
+    },
+
+    transcript: function (b) {
+      return title(b) + '<div class="tx">' + (b.label ? '<div class="tx-head"><span class="tx-badge">Verbatim transcript</span><span class="tx-meta">' + esc(b.label) + '</span></div>' : '') +
+        (b.items || []).map(function (m) {
+          if (m.gap) return '<div class="tx-gap">' + esc(m.gap) + '</div>';
+          var body = (m.parts || []).map(function (p) {
+            return p.omit ? '<span class="tx-omit">' + esc(p.omit) + '</span>' : esc(p.text);
+          }).join('');
+          return '<div class="tx-msg ' + esc(m.role) + '"><div class="tx-who"><span class="tx-role">' + (m.role === 'user' ? 'USER' : 'AI') + '</span><span class="tx-n">' + esc(m.n) + '</span>' + (m.excerpt ? '<span class="tx-ex">Verbatim excerpt</span>' : '<span class="tx-ex full">Complete message</span>') + '</div><div class="tx-body">' + body + '</div></div>';
+        }).join('') + '</div>' + caption(b);
+    },
+    note: function (b) { return '<div class="note">' + (b.label ? '<h4>' + esc(b.label) + '</h4>' : '') + fmt(b.text) + '</div>'; },
+    callout: function (b) { return '<div class="callout">' + (b.title ? '<h3>' + fmt(b.title, true) + '</h3>' : '') + '<p style="margin-bottom:0">' + fmt(b.text, true) + '</p></div>'; },
+    skyband: function (b) { return '<div class="skyband">' + (b.title ? '<h2>' + fmt(b.title) + '</h2>' : '') + '<p class="lead" style="margin-bottom:0">' + fmt(b.text) + '</p></div>'; },
+    phases: function (b) {
+      return (b.items || []).map(function (i) {
+        return '<div class="phase"><div class="pn">' + esc(i.label) + '</div><div><h3>' + fmt(i.title) + '</h3><p>' + fmt(i.text) + '</p>' + (i.effort ? '<div class="effort">' + fmt(i.effort) + '</div>' : '') + '</div></div>';
+      }).join('');
+    }
+  };
+
+  function renderBlock(b) {
+    var fn = BLOCKS[b && b.type];
+    var html = fn ? fn(b) : '<div class="note">Unknown block type: <code>' + esc(b && b.type) + '</code>. See the guide at the top of this file.</div>';
+    return '<div class="block">' + html + '</div>';
+  }
+
+  function renderSection(s, i) {
+    var head = (s.eyebrow ? '<div class="eyebrow">' + esc(s.eyebrow) + '</div>' : '') +
+      (s.title ? (s.hero ? '<h1>' + fmt(s.title) + '</h1>' : '<h2>' + fmt(s.title) + '</h2>') : '') +
+      (s.lead ? '<p class="lead">' + fmt(s.lead) + '</p>' : '');
+    var blocks = (s.blocks || []).map(renderBlock).join('');
+    var id = esc(s.id || ('section-' + i));
+    return s.hero
+      ? '<header class="hero" id="' + id + '"><div class="container">' + head + blocks + '</div></header>'
+      : '<section class="section" id="' + id + '"><div class="container">' + head + blocks + '</div></section>';
+  }
+
+  function showError(msg) {
+    document.getElementById('app').innerHTML = '<div class="data-error"><strong>Data error</strong><br>' + esc(msg) + '</div>';
+  }
+
+  var D;
+  try {
+    D = JSON.parse(document.getElementById('report-data').textContent);
+  } catch (e) {
+    showError('The data block is not valid JSON: ' + e.message + '. Check for a missing comma, quote or bracket near the position mentioned.');
+    return;
+  }
+
+  try {
+    var meta = D.meta || {};
+    var sections = D.sections || [];
+    document.title = meta.title || 'Audit Report';
+    if (meta.sample_data) document.body.classList.add('has-sample');
+
+    var navItems = sections.map(function (s, i) { return { id: s.id || ('section-' + i), nav: s.nav }; }).filter(function (x) { return x.nav; });
+    var html = '';
+    if (meta.sample_data) html += '<div class="samplebar">Sample data. Replace the report-data block, then set sample_data to false.</div>';
+    html += '<div class="container"><div class="brandhead">' +
+      (meta.show_logo === false ? '<span></span>' : '<span aria-label="Logo">' + LOGO + '</span>') +
+      '<div class="brandtag">' + esc(meta.brand_tag || '') + (meta.brand_date ? '<br>' + esc(meta.brand_date) : '') + '</div></div></div>';
+    if (navItems.length) {
+      html += '<nav class="navchips" aria-label="Section navigation"><div class="container row">' +
+        navItems.map(function (n) { return '<button class="navchip" data-target="' + esc(n.id) + '">' + esc(n.nav) + '</button>'; }).join('') +
+        '</div></nav>';
+    }
+    html += sections.map(renderSection).join('');
+    if (meta.footer) html += '<footer class="sitefoot"><div class="container">' + fmt(meta.footer) + '</div></footer>';
+    document.getElementById('app').innerHTML = html;
+  } catch (e) {
+    showError('The data is valid JSON but a block is malformed: ' + e.message);
+    return;
+  }
+
+  document.addEventListener('click', function (e) {
+    var t = e.target.closest && e.target.closest('[data-target]');
+    if (!t) return;
+    var el = document.getElementById(t.getAttribute('data-target'));
+    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  });
+  document.addEventListener('input', function (e) {
+    var t = e.target;
+    if (!t.matches || !t.matches('[data-search]')) return;
+    var q = t.value.toLowerCase();
+    var wrap = t.nextElementSibling;
+    if (!wrap) return;
+    wrap.querySelectorAll('tbody tr').forEach(function (tr) { tr.style.display = tr.textContent.toLowerCase().indexOf(q) > -1 ? '' : 'none'; });
+  });
+})();
+</script>
+</body>
+</html>
