@@ -1,0 +1,499 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="robots" content="noindex, nofollow, noarchive"><meta name="color-scheme" content="only light"><title>Peninsula Canada: what search engines and AI can read</title><style>:root{
+    --dark:#2A2B29;
+    --lime:#E1FF01;
+    --muted:#6E7681;
+    --good:#137333;
+    --warn:#B06000;
+    --bad:#C5221F;
+    --bg-good:#E6F4EA;
+    --bg-warn:#FFF8E6;
+    --bg-bad:#FFEBE9;
+    --callout:#EEEADE;
+    --border:#CCCCCC;
+    --zebra:#F5F4EE;
+    --card:#FFFFFF;
+    /* Chart series: the lead is brand dark, competitors the metadata grey (the WLDM metadata grey, 4.6:1 on white) */
+    --series-lead:#2A2B29;
+    --series-comp:#6E7681;
+    --gridline:#E4E2DA;
+  }
+  *{box-sizing:border-box;}
+  html{-webkit-text-size-adjust:100%;}
+  body{
+    margin:0;
+    padding:28px 16px 48px;
+    background:var(--card);
+    color:var(--dark);
+    font-family:-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    font-size:15px;
+    line-height:1.45;
+  }
+  .wrap{max-width:1100px;margin:0 auto;}
+
+  h1{font-size:26px;line-height:1.2;margin:0 0 6px;color:var(--dark);}
+  .subtitle{color:var(--muted);font-size:14px;margin:0 0 24px;}
+  h2{
+    font-size:18px;
+    margin:32px 0 12px;
+    padding-bottom:6px;
+    border-bottom:3px solid var(--lime);
+    color:var(--dark);
+  }
+  h3{font-size:14px;color:var(--muted);margin:20px 0 8px;text-transform:uppercase;letter-spacing:.04em;}
+
+  /* Callout */
+  .callout{
+    background:var(--callout);
+    border-left:5px solid var(--lime);
+    padding:14px 16px;
+    margin:0 0 8px;
+  }
+  .callout p{margin:0 0 8px;}
+  .callout p:last-child{margin-bottom:0;}
+  .callout strong.label{display:block;margin-bottom:6px;}
+
+  /* Lists */
+  ul{margin:0 0 4px;padding-left:20px;}
+  ol{margin:0 0 4px;padding-left:22px;}
+  li{margin:0 0 6px;}
+  li b{font-weight:600;}
+
+  /* Tables */
+  table{
+    width:100%;
+    border-collapse:collapse;
+    margin:4px 0 8px;
+    font-size:13.5px;
+    table-layout:fixed;
+  }
+  th,td{
+    text-align:left;
+    vertical-align:top;
+    padding:7px 9px;
+    border:1px solid var(--border);
+    overflow-wrap:break-word;
+    word-wrap:break-word;
+  }
+  thead th{
+    background:var(--dark);
+    color:#FFFFFF;
+    font-weight:600;
+    font-size:13px;
+  }
+  tbody tr:nth-child(even) td{background:var(--zebra);}
+  tbody th{background:var(--zebra);font-weight:600;}
+  tfoot td{background:var(--zebra);font-weight:600;}
+  td.num,th.num{text-align:right;}
+
+  /* Column sizing for the main stage table */
+  .stages col.c-stage{width:15%;}
+  .stages col.c-out{width:25%;}
+  .stages col.c-tech{width:23%;}
+  .stages col.c-own{width:15%;}
+  .stages col.c-time{width:11%;}
+  .stages col.c-exists{width:11%;}
+
+  .ident col.c-class{width:20%;}
+  .ident col.c-n{width:7%;}
+  .ident col.c-cand{width:11%;}
+  .ident col.c-gate{width:11%;}
+  .ident col.c-ver{width:11%;}
+  .ident col.c-note{width:40%;}
+
+  .route col.c-rclass{width:30%;}
+  .route col.c-rauth{width:52%;}
+  .route col.c-rship{width:18%;}
+
+  .versus col.c-vrow{width:18%;}
+  .versus col.c-vfree{width:41%;}
+  .versus col.c-vpaid{width:41%;}
+
+  .build col.c-item{width:78%;}
+  .build col.c-hrs{width:22%;}
+
+  /* Status pills */
+  .pill{
+    display:inline-block;
+    padding:2px 8px;
+    border-radius:10px;
+    font-size:12px;
+    font-weight:600;
+    white-space:nowrap;
+  }
+  .pill-yes{background:var(--bg-good);color:var(--good);border:1px solid var(--good);}
+  .pill-part{background:var(--bg-warn);color:var(--warn);border:1px solid var(--warn);}
+  .pill-no{background:var(--bg-bad);color:var(--bad);border:1px solid var(--bad);}
+
+  .keyline{
+    margin:8px 0 0;
+    font-weight:600;
+  }
+  .note{color:var(--muted);font-size:13px;margin:6px 0 0;}
+
+  footer{
+    margin-top:36px;
+    padding-top:10px;
+    border-top:3px solid var(--lime);
+    color:var(--muted);
+    font-size:13px;
+  }
+
+  /* Phone — wide tables stack into labelled blocks, no sideways scroll */
+  @media (max-width:640px){
+    body{font-size:14px;padding:20px 16px 40px;}
+    h1{font-size:21px;}
+    h2{font-size:16px;}
+    table{font-size:13px;table-layout:auto;}
+    th,td{padding:6px 7px;}
+    .route col, .build col, .versus col{width:auto;}
+
+    .stack{border:none;}
+    .stack colgroup,
+    .stack thead{display:none;}
+    .stack tbody,
+    .stack tfoot,
+    .stack tr,
+    .stack td{display:block;width:auto;}
+    .stack tr{
+      border:1px solid var(--border);
+      border-left:5px solid var(--lime);
+      margin:0 0 12px;
+    }
+    .stack td{
+      border:none;
+      border-top:1px solid #E4E2DA;
+      padding:7px 11px;
+    }
+    .stack tbody tr:nth-child(even) td{background:transparent;}
+    .stack td.num{text-align:left;}
+    .stack td:empty{display:none;}
+    .stack td[data-label]::before{
+      content:attr(data-label);
+      display:block;
+      font-size:11px;
+      letter-spacing:.04em;
+      text-transform:uppercase;
+      color:var(--muted);
+      margin-bottom:2px;
+    }
+    .stack td.rowhead{
+      background:var(--zebra);
+      border-top:none;
+      font-weight:600;
+    }
+    .stack tfoot tr{border-left-color:var(--border);}
+    .stack tfoot td{background:var(--zebra);}
+  }
+
+  /* Print */
+  @page{size:A4;margin:12mm;}
+  @media print{
+    body{padding:0;font-size:10.5px;}
+    .wrap{max-width:none;}
+    h1{font-size:18px;}
+    h2{font-size:13px;margin-top:16px;}
+    table{font-size:9px;page-break-inside:auto;}
+    th,td{padding:3px 4px;}
+    tr,td,th{page-break-inside:avoid;}
+    h2{page-break-after:avoid;}
+    .pill{border:1px solid currentColor;}
+  }
+
+  .scroll{position:relative;overflow-x:auto;-webkit-overflow-scrolling:touch;margin:8px 0;}
+  table.plain th,table.plain td{vertical-align:top;}
+  table.plain{min-width:560px;}
+  .callout ol{margin:4px 0 0 18px;padding:0;}
+  ul.note{margin:6px 0 0 18px;padding:0;}
+  .footer{color:var(--muted);font-size:12px;margin-top:28px;border-top:2px solid var(--lime);padding-top:8px;}
+  @media (max-width:640px){table.plain{min-width:520px;}}
+
+  /* Summary stat cards (the look of Taha's audit pages, in WLDM colours) */
+  .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px;margin:4px 0 14px;}
+  .stat{background:var(--zebra);border:1px solid var(--border);border-top:3px solid var(--lime);border-radius:12px;padding:16px 16px 14px;}
+  .stat .v{font-size:30px;font-weight:600;letter-spacing:-.02em;line-height:1.1;margin-bottom:6px;}
+  .stat .k{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:4px;}
+  .stat .sub{font-size:12.5px;color:var(--dark);}
+
+  /* Legends and keys (text stays in text colours; the swatch carries the colour) */
+  .legend{display:flex;flex-wrap:wrap;gap:6px 18px;font-size:13px;margin:6px 0 4px;}
+  .legend span{display:inline-flex;align-items:center;gap:6px;}
+  .key{display:inline-block;width:14px;height:10px;border-radius:2px;}
+  .key.lead{background:var(--series-lead);}
+  .key.comp{background:var(--series-comp);}
+  .key.ref{width:0;height:14px;border-left:2px dashed var(--dark);border-radius:0;}
+
+  /* Score bar chart (inline SVG) */
+  .chart-wrap{margin:4px 0 8px;}
+  svg.chart{display:block;width:100%;max-width:730px;min-width:520px;height:auto;}
+  svg.chart text{font-size:12.5px;fill:var(--dark);font-family:inherit;}
+  svg.chart .tick{fill:var(--muted);font-size:11.5px;}
+  svg.chart .gl{stroke:var(--gridline);stroke-width:1;}
+  svg.chart .ref{stroke:var(--dark);stroke-width:1.5;stroke-dasharray:4 3;}
+  svg.chart .ref-l{font-weight:600;font-size:12px;}
+  svg.chart .bar{fill:var(--series-comp);}
+  svg.chart .row.lead .bar{fill:var(--series-lead);}
+  svg.chart .row.lead .lbl,svg.chart .row.lead .val{font-weight:700;}
+  svg.chart .val{font-variant-numeric:tabular-nums;}
+  svg.chart .hit{fill:transparent;}
+  svg.chart .row:hover .hit,svg.chart .row:focus .hit{fill:var(--zebra);}
+  svg.chart .row:hover .bar,svg.chart .row:focus .bar{opacity:.8;}
+  svg.chart .row:focus{outline:none;}
+
+  /* Ideal-type grid: symbols, so it never relies on colour alone */
+  table.tgrid{table-layout:auto;width:auto;min-width:0;}
+  table.tgrid th,table.tgrid td{padding:5px 7px;}
+  table.tgrid th.tcol{min-width:170px;}
+  table.tgrid th.pcol{min-width:78px;}
+  table.tgrid th.vh{vertical-align:bottom;padding:8px 4px;white-space:nowrap;}
+  table.tgrid th.vh span{writing-mode:vertical-rl;transform:rotate(180deg);display:inline-block;font-size:12px;}
+  table.tgrid td.c{text-align:center;vertical-align:middle;min-width:34px;font-variant-numeric:tabular-nums;}
+  table.tgrid tfoot td.c{font-size:12px;}
+  .mk{display:inline-block;width:22px;height:22px;line-height:20px;border-radius:4px;font-weight:700;font-size:13px;font-style:normal;text-align:center;}
+  .mk.has{background:var(--dark);color:#FFFFFF;border:1px solid var(--dark);}
+  .mk.via{background:#FFFFFF;color:var(--dark);border:1.5px solid var(--dark);}
+  .mk.none{background:#FFFFFF;border:1px dashed var(--border);}
+  .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;}
+  @media print{.stats{grid-template-columns:repeat(4,1fr);} .stat .v{font-size:20px;} svg.chart{min-width:0;}}
+  /* Gate status pills: status colours with a symbol, so colour is never the only signal */
+  .gs{display:inline-block;padding:1px 7px;border-radius:10px;font-size:12px;font-weight:600;white-space:nowrap;border:1px solid currentColor;}
+  .gs-pass{color:var(--good);background:var(--bg-good);}
+  .gs-partial{color:var(--warn);background:var(--bg-warn);}
+  .gs-fail{color:var(--bad);background:var(--bg-bad);}
+  .gs-not-checked,.gs-info{color:var(--muted);background:#FFFFFF;}
+  details summary{cursor:pointer;color:var(--muted);font-size:13px;margin:6px 0;}
+
+  /* Lead page additions (on top of report-style.css). WLDM brand: lime for rules and borders only. */
+  .lead-page h1{font-size:28px;}
+  .start{background:var(--callout);border-left:5px solid var(--lime);padding:16px 18px;margin:0 0 8px;font-size:16px;}
+  .start p{margin:0 0 8px;} .start p:last-child{margin-bottom:0;}
+  .start .label{font-weight:700;text-transform:uppercase;letter-spacing:.06em;font-size:12px;color:var(--muted);}
+  .gate-table td:first-child{font-weight:600;}
+  ul.found{margin:6px 0 0 18px;padding:0;} ul.found li{margin:0 0 6px;}
+  .ctx{margin:8px 0;} .ctx .src{color:var(--muted);font-size:13px;}
+  ol.fixes li{margin:0 0 8px;}
+  .contact{font-weight:600;margin-top:12px;}
+  /* WLDM has no blue: links are brand dark and underlined. */
+  .lead-page a{color:var(--dark);text-decoration:underline;text-underline-offset:2px;}
+  /* Phone: tables marked .stack become labelled cards (report-style.css), so they must not keep the 520px minimum. */
+  @media (max-width:640px){.lead-page table.plain{min-width:0;} .lead-page .stack tbody tr td.rowhead{background:var(--zebra);}}
+  /* Print: keep boxes whole, and print the dark table headers and pills even when "background graphics" is off. */
+  @media print{.start{font-size:12px;} .start,.ctx,ul.found li,ol.fixes li{break-inside:avoid;} .lead-page{-webkit-print-color-adjust:exact;print-color-adjust:exact;}}
+
+
+.c21{overflow-wrap:break-word;word-wrap:break-word;}
+.c21 .brand{font-weight:800;letter-spacing:.14em;font-size:13px;margin:0 0 14px;padding-bottom:6px;border-bottom:3px solid var(--lime);display:inline-block;line-height:0;}
+.c21 .brand svg.wldm-logo{display:block;height:30px;width:auto;}
+.c21 header h1{margin:0 0 14px;}
+.c21 header .hero{margin:0 0 14px;}
+.c21 header .subtitle{margin:0 0 4px;}
+.c21 .scope{color:var(--muted);font-size:14px;margin:0 0 12px;}
+.c21 .hero p{font-size:19px;font-weight:600;line-height:1.35;}
+.c21 nav.toc{position:sticky;top:0;z-index:10;background:var(--card);border-bottom:1px solid var(--border);padding:8px 0;margin:0 0 6px;}
+.c21 nav.toc ul{display:flex;flex-wrap:wrap;gap:6px 16px;list-style:none;margin:0;padding:0;font-size:13.5px;}
+.c21 nav.toc li{margin:0;}
+.c21 section[id],.c21 h2[id]{scroll-margin-top:60px;}
+.c21 section{margin:0 0 8px;}
+.c21 h3.sub{margin:22px 0 8px;}
+.c21 .intro{margin:0 0 10px;}
+.c21 .exec{background:var(--callout);border-left:5px solid var(--lime);padding:16px 18px;margin:0 0 10px;}
+.c21 .exec ol{margin:6px 0 0;padding-left:1.4em;} .c21 .exec li{margin:0 0 8px;font-size:15.5px;line-height:1.45;}
+.c21 .exec .label{font-weight:700;text-transform:uppercase;letter-spacing:.06em;font-size:12px;color:var(--muted);margin:0;}
+.c21 .card{border:1px solid var(--border);border-left:5px solid var(--lime);border-radius:4px;padding:14px 16px 10px;margin:0 0 14px;background:var(--card);}
+.c21 .card.finding{border-left-width:6px;}
+.c21 .card.sev-high{border-left-color:var(--bad);} .c21 .card.sev-medium{border-left-color:var(--warn);} .c21 .card.sev-low{border-left-color:var(--muted);}
+.c21 .card h3{font-size:17px;line-height:1.3;color:var(--dark);text-transform:none;letter-spacing:0;margin:0 0 4px;}
+.c21 .card h4{font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin:12px 0 4px;}
+.c21 .card p{margin:0 0 6px;}
+/* Ruling 6: every list inside a card has the same left indent, so no bullet hangs outside the card's edge. */
+.c21 .card ul:not(.lines),.c21 .card ol,.c21 ul.found{margin:4px 0 8px;padding-left:1.25em;}
+.c21 .card li{margin:0 0 5px;}
+.c21 .card .callout{margin:8px 0;}
+.c21 .card details{margin:6px 0 4px;} .c21 .card details summary{font-weight:600;color:var(--dark);font-size:14px;}
+.c21 .card details[open] summary{margin-bottom:8px;}
+.c21 .done-when,.c21 .effort,.c21 .right{font-size:14px;margin:6px 0 0;}
+.c21 .failed{color:var(--muted);font-size:14px;}
+.c21 h4.ex{font-size:13.5px;margin:10px 0 4px;}
+.c21 .card .ex-label{font-weight:600;font-size:13.5px;margin:8px 0 4px;}
+.c21 ul.evidence li{font-size:14px;}
+.c21 .more{color:var(--muted);font-size:13px;}
+.c21 .chips{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0 8px;}
+.c21 .chip{display:inline-flex;align-items:center;gap:5px;padding:2px 9px;border-radius:10px;font-size:12px;font-weight:600;border:1px solid currentColor;white-space:nowrap;}
+.c21 .chip.sev-high{color:#FFFFFF;background:var(--bad);border-color:var(--bad);}
+.c21 .chip.sev-medium{color:var(--warn);background:var(--bg-warn);border-color:var(--warn);}
+.c21 .chip.sev-low{color:var(--dark);background:var(--zebra);border-color:var(--muted);}
+.c21 .chip.gate{color:var(--dark);background:var(--card);border-color:var(--border);}
+.c21 .chip.kind{color:var(--dark);background:var(--zebra);border-color:var(--border);}
+.c21 .chip.confirm{color:var(--dark);background:var(--callout);border:1px dashed var(--muted);white-space:normal;}
+.c21 .chip.mini{font-size:11px;padding:1px 7px;margin-right:4px;vertical-align:1px;}
+.c21 .sevkey{display:flex;flex-wrap:wrap;gap:8px 16px;align-items:center;font-size:13px;color:var(--muted);margin:0 0 12px;}
+.c21 .sevkey .pair{display:inline-flex;align-items:center;gap:6px;}
+.c21 details.more-sec > summary{font-size:14px;font-weight:600;color:var(--dark);margin:8px 0 12px;}
+.c21 details.sub-details > summary{font-size:14px;font-weight:600;color:var(--dark);margin:14px 0 8px;}
+.c21 .tag{display:inline-block;padding:2px 9px;border-radius:10px;font-size:12px;font-weight:600;border:1px solid currentColor;white-space:nowrap;}
+.c21 .tag.t{color:var(--dark);background:var(--zebra);}
+.c21 .url{overflow-wrap:anywhere;word-break:break-word;}
+.c21 code{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:12.5px;overflow-wrap:anywhere;word-break:break-word;}
+.c21 ul.lines{list-style:none;padding:0;margin:4px 0 8px;}
+.c21 ul.lines li{margin:0 0 6px;}
+.c21 .sym{font-weight:700;font-size:15px;}
+.c21 .sym.allowed,.c21 .sym.yes{color:var(--good);} .c21 .sym.blocked,.c21 .sym.no{color:var(--bad);} .c21 .sym.unread{color:var(--muted);}
+.c21 .crawlers th{overflow-wrap:anywhere;}
+.c21 .crawlers td{text-align:center;} .c21 .crawlers td.rowhead{text-align:left;}
+.c21 .legend21{color:var(--muted);font-size:13px;margin:4px 0 6px;white-space:pre-wrap;}
+.c21 .you{font-weight:700;}
+.c21 .to-confirm{display:inline-block;border:1px dashed var(--muted);border-radius:4px;padding:1px 6px;background:var(--callout);}
+.c21 .to-confirm em{color:var(--muted);font-size:12.5px;}
+.c21 .checked{display:inline-block;border:1px solid var(--good);border-radius:4px;padding:1px 6px;background:var(--bg-good);}
+.c21 .checked em{color:var(--good);font-size:12.5px;font-style:normal;font-weight:600;}
+.c21 .bars{margin:10px 0 6px;max-width:760px;}
+.c21 .bar-row{display:grid;grid-template-columns:minmax(120px,190px) 1fr;gap:4px 12px;align-items:start;margin:0 0 12px;}
+.c21 .bar-row .name{font-size:14px;overflow-wrap:anywhere;padding-top:2px;}
+.c21 .bar-row.lead .name{font-weight:700;}
+.c21 .track{height:22px;border-left:1px solid var(--dark);}
+.c21 .bar{display:block;height:22px;background:var(--muted);}
+.c21 .bar-row.lead .bar{background:var(--series-lead);}
+.c21 .bar.na{width:100%;background:var(--callout);border:1px dashed var(--muted);color:var(--dark);font-size:12.5px;line-height:20px;padding:0 8px;}
+.c21 .val{font-size:13px;margin-top:3px;} .c21 .val .pages{color:var(--muted);}
+.c21 .figs{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;margin:6px 0 10px;}
+.c21 .fig{background:var(--zebra);border:1px solid var(--border);border-top:3px solid var(--lime);border-radius:10px;padding:14px 16px;}
+.c21 .fig .v{font-size:24px;font-weight:700;line-height:1.15;margin-bottom:6px;}
+.c21 .fig .k{font-weight:600;margin-bottom:4px;}
+.c21 .fig .why{color:var(--muted);font-size:13.5px;}
+.c21 ol.plan{padding-left:1.6em;} .c21 ol.plan li{margin:0 0 10px;} .c21 .done{display:block;color:var(--muted);font-size:13.5px;}
+.c21 pre.jsonld{background:var(--zebra);border:1px solid var(--border);border-left:5px solid var(--lime);padding:12px 14px;white-space:pre-wrap;overflow-wrap:anywhere;word-break:break-word;margin:8px 0;}
+.c21 figure.emap{margin:8px 0 12px;}
+.c21 svg.emap-svg{display:block;width:100%;max-width:760px;height:auto;font-family:inherit;}
+.c21 .emap-narrow{display:none;}
+.c21 svg.emap-svg .nt{font-size:15px;font-weight:700;fill:var(--dark);}
+.c21 svg.emap-svg .ns{font-size:12px;fill:var(--dark);}
+.c21 svg.emap-svg .el{font-size:11.5px;fill:var(--muted);paint-order:stroke;stroke:var(--card);stroke-width:4px;stroke-linejoin:round;}
+.c21 svg.emap-svg .el.miss-t{fill:var(--bad);font-weight:600;}
+.c21 svg.emap-svg .e-ok{stroke:var(--dark);stroke-width:2;fill:none;}
+.c21 svg.emap-svg .e-miss{stroke:var(--bad);stroke-width:2;stroke-dasharray:6 4;fill:none;}
+.c21 svg.emap-svg .e-wd{stroke:var(--muted);stroke-width:2;fill:none;}
+.c21 svg.emap-svg .n-you{fill:var(--card);stroke:var(--dark);stroke-width:3;}
+.c21 svg.emap-svg .n-ok{fill:var(--card);stroke:var(--dark);stroke-width:1.5;}
+.c21 svg.emap-svg .n-wd{fill:var(--zebra);stroke:var(--muted);stroke-width:1.5;}
+.c21 svg.emap-svg .n-miss{fill:var(--bg-bad);stroke:var(--bad);stroke-width:1.5;stroke-dasharray:6 4;}
+.c21 svg.emap-svg .ah-ok{fill:var(--dark);} .c21 svg.emap-svg .ah-miss{fill:var(--bad);} .c21 svg.emap-svg .ah-wd{fill:var(--muted);}
+.c21 .lk{display:inline-block;width:26px;height:0;border-top:2px solid var(--dark);vertical-align:middle;}
+.c21 .lk.miss{border-top:2px dashed var(--bad);} .c21 .lk.wd{border-top-color:var(--muted);}
+.c21 table.ident4 td{text-align:center;} .c21 table.ident4 td.rowhead{text-align:left;}
+.c21 footer.contact-foot p{margin:0 0 6px;} .c21 footer.contact-foot .contact{color:var(--dark);}
+@media (max-width:640px){
+  .c21 .hero p{font-size:17px;}
+  .c21 .brand svg.wldm-logo{height:26px;}
+  .c21 nav.toc ul{flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;white-space:nowrap;padding-bottom:4px;scrollbar-width:thin;}
+  .c21 .exec{padding:14px 14px;} .c21 .exec li{font-size:14.5px;}
+  .c21 .card{padding:12px 12px 8px;}
+  .c21 .bar-row{grid-template-columns:1fr;}
+  .c21 .crawlers tr{display:flex;flex-wrap:wrap;}
+  .c21 .crawlers td{text-align:left;flex:1 0 33%;min-width:0;}
+  .c21 .crawlers td.rowhead{flex-basis:100%;}
+  .c21 .ident4 td{flex:1 0 50%;}
+  .c21 .figs{grid-template-columns:1fr;}
+  .c21 .emap-wide{display:none;} .c21 .emap-narrow{display:block;} .c21 .emap-narrow svg{max-width:420px;margin:0 auto;}
+}
+@media print{
+  .c21 nav.toc{display:none;}
+  .c21 .card,.c21 .fig,.c21 .bar-row,.c21 pre.jsonld,.c21 ol.plan li{break-inside:avoid;}
+  .c21 .hero p{font-size:14px;} .c21 .fig .v{font-size:16px;}
+  .c21 .scroll{overflow:visible;}
+  .c21 .chip{-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+}
+</style></head><body><div class="wrap lead-page c21">
+<header><p class="brand"><svg class="wldm-logo" role="img" aria-label="WLDM" focusable="false" id="wldmlogo-Layer_2" data-name="Layer 2" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="185 210 460 130">
+  <defs>
+    <style>
+      .wldmlogo-1 {
+        fill: none;
+      }
+
+      .wldmlogo-2 {
+        clip-path: url(#wldmlogo-clippath-1);
+      }
+
+      .wldmlogo-3 {
+        fill: #2a2b29;
+      }
+
+      .wldmlogo-4 {
+        clip-path: url(#wldmlogo-clippath);
+      }
+    </style>
+    <clipPath id="wldmlogo-clippath">
+      <rect class="wldmlogo-1" width="841.89" height="595.28"/>
+    </clipPath>
+    <clipPath id="wldmlogo-clippath-1">
+      <rect class="wldmlogo-1" width="841.89" height="595.28"/>
+    </clipPath>
+  </defs>
+  <g id="wldmlogo-Layer_1-2" data-name="Layer 1">
+    <g>
+      <g class="wldmlogo-4">
+        <path class="wldmlogo-3" d="M244.1,280.47s0,0,0,0c0,0-.01-.02-.02-.02-.01-.02-.02-.02.01.02"/>
+        <path class="wldmlogo-3" d="M289.81,286.29c-1.8,1.32-3.77,2.42-5.69,3.58-3.21,1.93-6.85,4.11-10.7,6.41-7.44,4.1-45.57,23.81-48.32,25.2-9.4,4.75-14.72,1.77-16.72-5.4-.72-2.59-.85-5.35-1.15-8.05-.56-5.19-1.05-10.4-1.56-15.6-.5-5.12-.99-10.24-1.47-15.37-.91-9.54-1.82-19.08-2.72-28.61-.16-1.65-.31-3.31-.4-4.29.14-2.88.67-4.94,1.9-6.81,2.54-3.86,7.22-5.37,11.72-3.52,3.36,1.38,6.62,3.02,9.91,4.59,9.19,4.38,18.38,8.77,27.55,13.2,8.55,4.13,17.06,8.34,25.6,12.5,3.27,1.6,5.68,3.99,6.61,7.56,1.24,4.8-.28,8.86-4.01,11.97-2.24,1.87-4.77,3.39-7.19,5.05-6.5,4.45-31.16,19.08-37.17,22.5-1.49.85-7.08,4.09-8.86,4.3-3.49.41-6.65-1.29-8.43-4.43-1.24-2.2-1.58-4.62-1.95-7.05-1.3-8.5-2.64-17-3.94-25.51-1.21-7.93-2.49-15.85-3.57-23.79-.5-3.67.76-6.79,4.04-8.81,2.5-1.54,5.17-1.43,7.78-.43,6.1,2.36,12.17,4.79,18.23,7.25,10.1,4.09,20.17,8.22,30.26,12.34,3.72,1.52,6.12,5,6.17,9.51-.04,2.75-1.58,5.38-4.14,7.41-5.1,4.05-34.82,23.17-35.19,23.38-2.72,1.57-4.77,2.33-7.05.94-1.82-1.12-2.99-2.79-3.47-4.83-.86-3.59-1.59-7.21-2.35-10.82-1.61-7.58-3.23-15.17-4.82-22.76-.35-1.65-.71-3.3-.94-4.97-.48-3.57,1.79-6.87,5.13-7.58.44-.09.89-.11,1.53-.18.6.11,1.4.17,2.15.41,7.86,2.52,15.7,5.07,23.56,7.6,4.11,1.33,8.24,2.63,12.35,3.96,3.23,1.05,5.26,3.87,5.11,7.1-.1,2.21-1.14,3.98-2.74,5.44-4.79,4.39-18.48,13.81-26.33,18.36v.06c-1.34.46-2.81.12-3.94-1.01-1.09-1.09-1.54-2.49-1.93-3.93-2-7.38-4.02-14.75-6.02-22.13-.16-.61-.21-1.24-.31-1.86.11-3.5,2.75-5.5,6.15-4.69,7.87,1.88,15.75,3.73,23.64,5.54,3.8.87,5.12,5.03,2.41,8.01-1.67,1.83-8.44,6.14-13.11,9.24-2,1.08-4.01,2-4.56,1.86-1.23-.31-1.65-1.31-2.03-2.41-1.28-3.74-2.63-7.45-3.94-11.18-.1-.29-.17-.59-.23-.89-.14-.64-.07-1.33.25-1.91.53-.96,1.56-1.47,2.82-1.28,4.27.65,8.54,1.3,12.81,1.96,2.06.32,2.91,2.37,1.62,4.05-.72.93-6.33,3.92-6.78,4.17-.24.13-.48.27-.74.33-.5.13-.91-.14-1.23-.49-.4-.44-.72-.96-1.02-1.48-.27-.47-.5-.95-.72-1.45-.16-.38-.39-.87-.17-1.25.19-.32.58-.38.92-.4.13,0,.26-.01.38,0,.85.02,1.7.12,2.54.21.34.03.59.25.61.6.01.31-.29.64-.61.61-.27-.02-.69-.13-1.1-.07-.4.06-.56.25-.47,1.11.04.33.16.59.31.83.21.34.63.6,1.76.02,1.94-1,2.84-1.73,3.3-2.43.62-.94-.32-1.9-1.4-2.04-2.4-.3-4.8-.58-6.74-.81-1.73-.11-2.33.62-2.13,1.68.58,3.21,1.63,5.7,2.58,7.95.37.88,1.04,1.17,1.72.83,2.17-1.13,9.05-4.59,12.2-7.77,2.17-2.18.81-5.28-2.19-5.92-2.4-.51-4.8-1-7.21-1.46-3.7-.72-7.41-1.43-11.12-2.1-2.47-.45-4.38,1.12-4.45,3.54.12.59.2,1.19.38,1.77,1.75,5.75,3.5,11.51,5.3,17.24.24.76.69,1.5,1.21,2.1,1.11,1.27,2.49,1.07,3.94.23,2.63-1.51,11.13-6.92,11.49-7.3,0,0,4.7-2.85,6.27-4.36,1.17-1.14,2.39-2.26,3.38-3.55,2.51-3.27,1.02-8.04-2.79-9.16-2.48-.73-4.97-1.42-7.46-2.11-7.52-2.1-15.03-4.21-22.56-6.25-1.01-.27-2.16-.33-3.19-.15-2.33.4-4.38,2.59-4.31,5.78.06.52.06,1.06.18,1.57.93,3.98,1.88,7.95,2.84,11.93,1.4,5.79,2.83,11.57,4.22,17.36.36,1.48.89,2.86,1.84,4.07,1.7,2.19,4.31,2.33,6.63.81,3.45-2.25,21.39-13.34,26.54-17.73,1.7-1.45,3.49-2.85,4.98-4.51,1.92-2.13,2.62-4.72,1.82-7.59-.89-3.22-3.13-5.04-6.18-6.14-7.17-2.59-14.31-5.26-21.47-7.87-6.42-2.34-12.84-4.67-19.27-6.97-1.61-.58-3.27-.86-4.98-.44-3.65.91-5.79,3.77-5.87,7.75.05.53.06,1.06.16,1.57.66,3.71,1.33,7.42,2.02,11.13,1.98,10.69,3.98,21.37,5.96,32.06.35,1.91.9,3.73,2.09,5.32,2.56,3.41,6.24,3.4,10,1.39,5.11-2.72,24.42-14.3,30.46-18.28,3.86-2.54,7.46-5.45,11.16-8.22,2.74-2.05,4.4-4.76,4.61-8.22.28-4.45-2.21-8.4-6.45-10.34-4.82-2.21-9.64-4.41-14.48-6.59-6.76-3.05-13.51-6.1-20.29-9.11-6.65-2.95-13.32-5.88-20.01-8.76-2.83-1.22-5.76-1.44-8.56.07-3.56,1.92-4.92,5.11-4.96,9.52.38,3.17.82,6.83,1.28,10.5.55,4.34,1.12,8.68,1.67,13.02.62,4.9,1.22,9.8,1.84,14.69.59,4.66,1.19,9.32,1.81,13.98.4,3.06.75,6.13,1.28,9.17.51,2.91,1.91,5.37,4.41,7.07,3.15,2.14,8.1,1.57,11.65-.46,6.82-3.91,43.79-24.95,53.38-31.11,1.43-.92,2.85-1.98,3.95-3.25,3.07-3.57,3.99-7.67,2.34-12.18-1.09-2.97-3.11-5.22-5.88-6.7-7.43-3.95-14.91-7.82-22.36-11.72-5.78-3.02-11.54-6.06-17.33-9.05-7.24-3.74-14.5-7.44-21.76-11.15-2.79-1.43-5.56-2.93-8.4-4.25-2.89-1.35-5.92-1.76-8.99-.53-4.25,1.71-6.99,6.28-6.74,11.12.18,2.76.37,5.53.56,8.29.51,7.51,1.02,15.01,1.54,22.52.43,6.32.86,12.64,1.31,18.96.62,8.9,1.23,17.8,1.92,26.7.13,1.67.44,3.36.93,4.96.87,2.87,2.56,5.25,5.2,6.74,3.4,1.92,6.88,1.69,10.28-.1,3.46-1.83,6.14-3.17,9.35-4.91,4.82-2.6,9.6-5.59,19.78-10.58-2.06,1.23-5.83,3.56-5.83,3.56-.04.02-18.37,10.98-27.47,16.47-5.91,3.56-13.42,1.29-16.54-5.02-1.09-2.2-1.64-4.51-1.73-6.93-.29-8.23-.55-16.47-.83-24.7-.41-12.46-.83-24.91-1.24-37.37-.03-.84,0-1.69,0-2.53h-.07c-.24-7.1-.49-14.2-.71-21.3-.11-3.48.61-6.73,2.9-9.47,2.93-3.51,7.52-4.79,11.81-3.18,1.86.7,3.64,1.67,5.4,2.62,9.99,5.43,19.98,10.88,29.94,16.35,10.32,5.66,20.6,11.38,30.92,17.05,4.32,2.38,8.68,4.7,13.02,7.04,3.42,1.84,5.96,4.45,7.06,8.24,1.48,5.11-.45,10.75-4.86,14M298.06,268.93c-1.62-2.16-3.74-3.68-6.06-5-5.1-2.89-10.19-5.78-15.25-8.73-11-6.39-21.98-12.81-32.97-19.2-10.95-6.37-21.91-12.71-32.87-19.07-2.03-1.18-4.04-2.37-6.36-2.97-5.34-1.37-10.17.72-12.78,5.56-1.38,2.56-1.82,5.32-1.82,8.18,0,16.21,0,32.43,0,48.65h0v7.05c0,13.79-.02,27.57,0,41.36,0,3.09.4,6.12,1.9,8.89,2.14,3.95,5.43,6.08,9.99,6.1,2.78,0,5.29-.95,7.65-2.29,4.08-2.32,8.14-4.7,12.2-7.06,6.96-4.05,13.91-8.11,20.87-12.17v.03c4.54-2.64,15.09-8.82,19.62-11.47,10.08-5.87,20.17-11.72,30.26-17.57,1.98-1.15,3.77-2.51,5.24-4.29,3.93-4.74,4.07-11.09.37-16.01"/>
+      </g>
+      <polygon class="wldmlogo-3" points="330.69 308.21 310.6 245.09 320.96 245.09 337.21 295.82 337.57 295.82 355.1 245.09 365.1 245.09 382.71 295.82 383.26 295.82 398.77 245.09 408.86 245.09 388.86 308.21 377.12 308.21 359.87 259.67 359.5 259.67 342.43 308.21 330.69 308.21"/>
+      <polygon class="wldmlogo-3" points="422.99 308.21 422.99 245.09 433.17 245.09 433.17 299.59 467.3 299.59 467.3 308.21 422.99 308.21"/>
+      <g class="wldmlogo-2">
+        <path class="wldmlogo-3" d="M481.16,308.21v-63.12h23.49c6.18,0,11.22.24,15.14.73,3.91.49,7.02,1.39,9.31,2.7,2.29,1.32,3.95,3.15,4.95,5.51,1.01,2.35,1.67,5.38,1.97,9.08.3,3.7.46,8.21.46,13.53s-.15,9.83-.46,13.53c-.31,3.7-.96,6.73-1.97,9.08-1.01,2.36-2.66,4.19-4.95,5.5-2.29,1.32-5.4,2.22-9.31,2.71-3.92.49-8.96.73-15.14.73h-23.49ZM491.34,299.77h11.65c4.46,0,8.16-.06,11.1-.18,2.94-.12,5.24-.54,6.93-1.24,1.68-.7,2.9-1.88,3.67-3.53.77-1.65,1.25-3.93,1.47-6.84.21-2.9.32-6.68.32-11.33s-.12-8.42-.37-11.33c-.24-2.9-.75-5.18-1.51-6.84-.77-1.65-2.01-2.83-3.72-3.53-1.71-.7-4.02-1.12-6.93-1.24-2.91-.12-6.56-.18-10.96-.18h-11.65v46.24Z"/>
+      </g>
+      <polygon class="wldmlogo-3" points="554.74 308.21 554.74 245.09 567.86 245.09 591.89 294.08 592.45 294.08 616.3 245.09 629.51 245.09 629.51 308.21 619.6 308.21 619.6 260.13 619.33 260.13 595.84 308.21 587.95 308.21 564.74 260.13 564.37 260.13 564.37 308.21 554.74 308.21"/>
+    </g>
+  </g>
+</svg></p><h1>Peninsula Canada: what search engines and AI can read</h1>
+<div class="start hero"><p>What search engines and AI tools see on peninsulacanada.ca, taken from your own pages and code, and what to change first.</p></div>
+<p class="subtitle">A website deep dive of peninsulacanada.ca, prepared by WLDM on 16 October 2026.</p><p class="scope">We read 0 pages of your site (served HTML, captured on 16 October 2026), sampled 10 competitors, and checked 7 searches in Google and ChatGPT.</p></header>
+<nav class="toc" aria-label="On this page"><ul><li><a href="#summary">Summary</a></li><li><a href="#fix-first">Fix first</a></li><li><a href="#ai">AI answers</a></li><li><a href="#reach">Reach</a></li><li><a href="#read">Read</a></li><li><a href="#quote">Quote</a></li><li><a href="#trust">Trust</a></li><li><a href="#competitors">Competitors</a></li><li><a href="#plan">Fix plan</a></li><li><a href="#limits">Limits</a></li></ul></nav>
+<section id="summary"><h2>In five lines</h2><div class="exec"><p class="label">For the leadership team</p><ol><li><b>AI answers.</b> Google showed an AI Overview for 7 of our 7 searches and did not cite peninsulacanada.ca in any of them. ChatGPT answered all 7 and did not cite or name Peninsula Canada in any of them.</li><li><b>Reach.</b> We could not read your robots.txt file. Your site refused our own crawler, which says who it is, so we read it as a normal browser.</li><li><b>Read.</b> We could not read any of your pages, so we could not check your structured data.</li><li><b>Trust is the gap.</b> Wikidata does not fully describe your business and its group.</li><li><b>Next.</b> 1 fix: 0 high, 1 medium, 0 low. 0 take a day or less. Start with &quot;the Wikidata entries&quot;.</li></ol></div></section>
+<section id="headline"><h2 id="fix-first">What to fix first</h2><p class="intro">The biggest problems, in the order an AI tool meets them. A tool that cannot reach or read your pages never gets as far as trusting them.</p>
+<div class="sevkey"><span>Severity:</span><span class="pair"><span class="chip sev-high"><span aria-hidden="true">▲</span> High</span> fix this quarter</span><span class="pair"><span class="chip sev-medium"><span aria-hidden="true">■</span> Medium</span> next template release</span><span class="pair"><span class="chip sev-low"><span aria-hidden="true">●</span> Low</span> when the template is next edited</span></div>
+<article class="card finding sev-medium headline"><h3>Wikidata does not fully describe your business and its group</h3>
+<p class="failed">Failed check: The business has a Wikidata item that records its group</p>
+<p class="chips"><span class="chip sev-medium"><span aria-hidden="true">■</span> Medium</span> <span class="chip gate">Gate 4: trust</span> <span class="chip kind">Opportunity</span></p>
+<p class="why"><b>Why it matters.</b> Wikidata (a free, open database of facts) is one of the sources AI tools and search engines use to check who a business is and who owns it.</p>
+<p class="fixline"><b>Fix.</b> Create or update the Wikidata items for the business and its group, with the official website and ownership, citing public sources. WLDM confirms the right items with you first.</p>
+<details>
+<summary>What we found, and how you know it is done</summary>
+<ul class="found">
+<li>Wikidata has no item for Peninsula Canada.</li>
+</ul>
+<p class="ex-label">Examples</p>
+<ul class="evidence">
+<li>Wikidata has no item for Peninsula Canada</li>
+</ul>
+<p class="done-when"><b>Done when:</b> The business's Wikidata item exists, lists the official website and records its parent company.</p>
+<p class="effort"><b>Effort:</b> Longer work</p>
+</details>
+</article></section>
+<section id="ai"><h2>Where you show up in AI answers</h2><p class="intro">Google's AI Overview is the answer Google writes with AI above its results. ChatGPT can also search the web and name its sources. For each search: your position in Google's results, and whether each AI tool cites you.</p><p>Google showed an AI Overview for 7 of your 7 searches, but did not cite your site in any of them.</p><p>ChatGPT answered 7 of the 7 searches. It did not cite your site in any of them.</p><div class="scroll"><table class="plain stack ai-table"><colgroup><col style="width:18%"><col style="width:12%"><col style="width:18%"><col style="width:17%"><col style="width:35%"></colgroup><thead><tr><th scope="col">Search</th><th scope="col">Your Google position</th><th scope="col">Google AI Overview</th><th scope="col">ChatGPT</th><th scope="col">Who is cited</th></tr></thead><tbody><tr><td class="rowhead">hr support for small business</td><td data-label="Your Google position">Not in the top ten</td><td data-label="Google AI Overview">Shown, does not cite you</td><td data-label="ChatGPT">Does not cite you</td><td data-label="Who is cited">Google: augmenthr.com, salopekconsulting.com, google.com, joinhomebase.com, superhrcanada.com, pivothrservices.com, ca.indeed.com, linkedin.com, trinet.com<br>ChatGPT: techradar.com, adp.ca, catalysthr.co, talentanchor.ca, supportpanda.ca, myhr.works, viabilityhr.ca, siennahr.com, superhrcanada.com, fractionalbusinesssolutions.ca</td></tr><tr><td class="rowhead">hr outsourcing canada</td><td data-label="Your Google position">Not in the top ten</td><td data-label="Google AI Overview">Shown, does not cite you</td><td data-label="ChatGPT">Does not cite you</td><td data-label="Who is cited">Google: adp.ca, peocanada.com, truenorthhr.ca, hrxconnect.com, youtube.com, rsmcanada.com, superhrcanada.com, randstad.ca, revenuebase.ai<br>ChatGPT: adp.ca, reddit.com, avanti.ca, clutch.co</td></tr><tr><td class="rowhead">employment contract template canada</td><td data-label="Your Google position">Not in the top ten</td><td data-label="Google AI Overview">Shown, does not cite you</td><td data-label="ChatGPT">Does not cite you</td><td data-label="Who is cited">Google: goheather.io, lawdepot.ca, canada.ca<br>ChatGPT: bilingo.ca, lexstart.ca, canlegaldocs.com, forms-legal.com, captain.legal, doxuno.com, goheather.io, wonder.legal</td></tr><tr><td class="rowhead">employment law advice canada</td><td data-label="Your Google position">Not in the top ten</td><td data-label="Google AI Overview">Shown, does not cite you</td><td data-label="ChatGPT">Does not cite you</td><td data-label="Who is cited">Google: employment-lawyers.ca, stikeman.com, fillmoreriley.com, litcolaw.com, levittllp.com, pinklarkin.com, labourandemploymentlaw.com, bestlawyers.com<br>ChatGPT: myworkrights.ca, en.wikipedia.org, pressbooks.bccampus.ca, practiceguides.chambers.com, chambers.com, jobs.ontario.ca, canada.ca</td></tr><tr><td class="rowhead">termination letter template canada</td><td data-label="Your Google position">Not in the top ten</td><td data-label="Google AI Overview">Shown, does not cite you</td><td data-label="ChatGPT">Does not cite you</td><td data-label="Who is cited">Google: mondaq.com, wonder.legal, ca.practicallaw.thomsonreuters.com<br>ChatGPT: canadapolicymanual.com, captain.legal, ca.indeed.com, employmenthero.com, letter-ca.com</td></tr><tr><td class="rowhead">employee handbook canada</td><td data-label="Your Google position">Not in the top ten</td><td data-label="Google AI Overview">Shown, does not cite you</td><td data-label="ChatGPT">Does not cite you</td><td data-label="Who is cited">Google: connectsus.com, employerline.ca, ohsmanuals.ca, resources.workable.com<br>ChatGPT: lawvo.com, canada.ca, canadaemploymenthumanrightslaw.com, workzoom.com, employmenthero.com, ca.indeed.com, go2hr.ca</td></tr><tr><td class="rowhead">workplace investigation services</td><td data-label="Your Google position">Not in the top ten</td><td data-label="Google AI Overview">Shown, does not cite you</td><td data-label="ChatGPT">Does not cite you</td><td data-label="Who is cited">Google: mkworkplaceinvestigations.com, pinklarkin.com, strategywisehr.ca, tracex.ca, canada.ca, masseylaw.ca, pivothrservices.com, theneutralzone.ca, bdo.ca, singhlamarche.com<br>ChatGPT: gusto.com, kpmg.com, cenera.ca, irc.queensu.ca, chrc-ccdp.gc.ca, hrology.ca, fermatasolutions.ca, commissionaires.ca, irmi.ca, impacthr.ca</td></tr></tbody></table></div><p class="note">Google results: 16 October 2026, Canada, desktop. ChatGPT: 16 October 2026, Canada, the gpt-4.1 model through the OpenAI API with web search (not the ChatGPT app), one answer per search.</p></section>
+<section id="gate-reach" class="gate"><h2 id="reach">Can AI reach it?</h2><p class="intro">AI tools send programs called crawlers to read websites. This part asks whether those crawlers are let in, and whether your pages are open to search engines.</p><h3 class="sub">What your robots.txt file allows</h3><div class="scroll"><table class="plain stack crawlers"><colgroup><col style="width:28%"><col style="width:12%"><col style="width:12%"><col style="width:12%"><col style="width:12%"><col style="width:12%"><col style="width:12%"></colgroup><thead><tr><th scope="col">Website</th><th scope="col">GPTBot</th><th scope="col">ClaudeBot</th><th scope="col">PerplexityBot</th><th scope="col">Google-Extended</th><th scope="col">Bingbot</th><th scope="col">Googlebot</th></tr></thead><tbody><tr><td class="rowhead">peninsulacanada.ca<span class="you"> (you)</span></td><td data-label="GPTBot"><span class="sym unread" aria-hidden="true">–</span><span class="sr">could not read</span></td><td data-label="ClaudeBot"><span class="sym unread" aria-hidden="true">–</span><span class="sr">could not read</span></td><td data-label="PerplexityBot"><span class="sym unread" aria-hidden="true">–</span><span class="sr">could not read</span></td><td data-label="Google-Extended"><span class="sym unread" aria-hidden="true">–</span><span class="sr">could not read</span></td><td data-label="Bingbot"><span class="sym unread" aria-hidden="true">–</span><span class="sr">could not read</span></td><td data-label="Googlebot"><span class="sym unread" aria-hidden="true">–</span><span class="sr">could not read</span></td></tr><tr><td class="rowhead">connectsus.com</td><td data-label="GPTBot"><span class="sym allowed" aria-hidden="true">✓</span><span class="sr">allowed</span></td><td data-label="ClaudeBot"><span class="sym allowed" aria-hidden="true">✓</span><span class="sr">allowed</span></td><td data-label="PerplexityBot"><span class="sym allowed" aria-hidden="true">✓</span><span class="sr">allowed</span></td><td data-label="Google-Extended"><span class="sym allowed" aria-hidden="true">✓</span><span class="sr">allowed</span></td><td data-label="Bingbot"><span class="sym allowed" aria-hidden="true">✓</span><span class="sr">allowed</span></td><td data-label="Googlebot"><span class="sym allowed" aria-hidden="true">✓</span><span class="sr">allowed</span></td></tr><tr><td class="rowhead">pivothrservices.com</td><td data-label="GPTBot"><span class="sym allowed" aria-hidden="true">✓</span><span class="sr">allowed</span></td><td data-label="ClaudeBot"><span class="sym allowed" aria-hidden="true">✓</span><span class="sr">allowed</span></td><td data-label="PerplexityBot"><span class="sym allowed" aria-hidden="true">✓</span><span class="sr">allowed</span></td><td data-label="Google-Extended"><span class="sym allowed" aria-hidden="true">✓</span><span class="sr">allowed</span></td><td data-label="Bingbot"><span class="sym allowed" aria-hidden="true">✓</span><span class="sr">allowed</span></td><td data-label="Googlebot"><span class="sym allowed" aria-hidden="true">✓</span><span class="sr">allowed</span></td></tr><tr><td class="rowhead">citationcanada.com</td><td data-label="GPTBot"><span class="sym allowed" aria-hidden="true">✓</span><span class="sr">allowed</span></td><td data-label="ClaudeBot"><span class="sym allowed" aria-hidden="true">✓</span><span class="sr">allowed</span></td><td data-label="PerplexityBot"><span class="sym allowed" aria-hidden="true">✓</span><span class="sr">allowed</span></td><td data-label="Google-Extended"><span class="sym allowed" aria-hidden="true">✓</span><span class="sr">allowed</span></td><td data-label="Bingbot"><span class="sym allowed" aria-hidden="true">✓</span><span class="sr">allowed</span></td><td data-label="Googlebot"><span class="sym allowed" aria-hidden="true">✓</span><span class="sr">allowed</span></td></tr><tr><td class="rowhead">pinklarkin.com</td><td data-label="GPTBot"><span class="sym allowed" aria-hidden="true">✓</span><span class="sr">allowed</span></td><td data-label="ClaudeBot"><span class="sym allowed" aria-hidden="true">✓</span><span class="sr">allowed</span></td><td data-label="PerplexityBot"><span class="sym allowed" aria-hidden="true">✓</span><span class="sr">allowed</span></td><td data-label="Google-Extended"><span class="sym allowed" aria-hidden="true">✓</span><span class="sr">allowed</span></td><td data-label="Bingbot"><span class="sym allowed" aria-hidden="true">✓</span><span class="sr">allowed</span></td><td data-label="Googlebot"><span class="sym allowed" aria-hidden="true">✓</span><span class="sr">allowed</span></td></tr><tr><td class="rowhead">brighthr.com</td><td data-label="GPTBot"><span class="sym allowed" aria-hidden="true">✓</span><span class="sr">allowed</span></td><td data-label="ClaudeBot"><span class="sym allowed" aria-hidden="true">✓</span><span class="sr">allowed</span></td><td data-label="PerplexityBot"><span class="sym allowed" aria-hidden="true">✓</span><span class="sr">allowed</span></td><td data-label="Google-Extended"><span class="sym allowed" aria-hidden="true">✓</span><span class="sr">allowed</span></td><td data-label="Bingbot"><span class="sym allowed" aria-hidden="true">✓</span><span class="sr">allowed</span></td><td data-label="Googlebot"><span class="sym allowed" aria-hidden="true">✓</span><span class="sr">allowed</span></td></tr><tr><td class="rowhead">bdo.ca</td><td data-label="GPTBot"><span class="sym allowed" aria-hidden="true">✓</span><span class="sr">allowed</span></td><td data-label="ClaudeBot"><span class="sym allowed" aria-hidden="true">✓</span><span class="sr">allowed</span></td><td data-label="PerplexityBot"><span class="sym allowed" aria-hidden="true">✓</span><span class="sr">allowed</span></td><td data-label="Google-Extended"><span class="sym allowed" aria-hidden="true">✓</span><span class="sr">allowed</span></td><td data-label="Bingbot"><span class="sym allowed" aria-hidden="true">✓</span><span class="sr">allowed</span></td><td data-label="Googlebot"><span class="sym allowed" aria-hidden="true">✓</span><span class="sr">allowed</span></td></tr><tr><td class="rowhead">joinhomebase.com</td><td data-label="GPTBot"><span class="sym allowed" aria-hidden="true">✓</span><span class="sr">allowed</span></td><td data-label="ClaudeBot"><span class="sym allowed" aria-hidden="true">✓</span><span class="sr">allowed</span></td><td data-label="PerplexityBot"><span class="sym allowed" aria-hidden="true">✓</span><span class="sr">allowed</span></td><td data-label="Google-Extended"><span class="sym allowed" aria-hidden="true">✓</span><span class="sr">allowed</span></td><td data-label="Bingbot"><span class="sym allowed" aria-hidden="true">✓</span><span class="sr">allowed</span></td><td data-label="Googlebot"><span class="sym allowed" aria-hidden="true">✓</span><span class="sr">allowed</span></td></tr><tr><td class="rowhead">peocanada.com</td><td data-label="GPTBot"><span class="sym allowed" aria-hidden="true">✓</span><span class="sr">allowed</span></td><td data-label="ClaudeBot"><span class="sym allowed" aria-hidden="true">✓</span><span class="sr">allowed</span></td><td data-label="PerplexityBot"><span class="sym allowed" aria-hidden="true">✓</span><span class="sr">allowed</span></td><td data-label="Google-Extended"><span class="sym allowed" aria-hidden="true">✓</span><span class="sr">allowed</span></td><td data-label="Bingbot"><span class="sym allowed" aria-hidden="true">✓</span><span class="sr">allowed</span></td><td data-label="Googlebot"><span class="sym allowed" aria-hidden="true">✓</span><span class="sr">allowed</span></td></tr><tr><td class="rowhead">adp.ca</td><td data-label="GPTBot"><span class="sym allowed" aria-hidden="true">✓</span><span class="sr">allowed</span></td><td data-label="ClaudeBot"><span class="sym allowed" aria-hidden="true">✓</span><span class="sr">allowed</span></td><td data-label="PerplexityBot"><span class="sym allowed" aria-hidden="true">✓</span><span class="sr">allowed</span></td><td data-label="Google-Extended"><span class="sym allowed" aria-hidden="true">✓</span><span class="sr">allowed</span></td><td data-label="Bingbot"><span class="sym allowed" aria-hidden="true">✓</span><span class="sr">allowed</span></td><td data-label="Googlebot"><span class="sym allowed" aria-hidden="true">✓</span><span class="sr">allowed</span></td></tr><tr><td class="rowhead">masseylaw.ca</td><td data-label="GPTBot"><span class="sym allowed" aria-hidden="true">✓</span><span class="sr">allowed</span></td><td data-label="ClaudeBot"><span class="sym allowed" aria-hidden="true">✓</span><span class="sr">allowed</span></td><td data-label="PerplexityBot"><span class="sym allowed" aria-hidden="true">✓</span><span class="sr">allowed</span></td><td data-label="Google-Extended"><span class="sym allowed" aria-hidden="true">✓</span><span class="sr">allowed</span></td><td data-label="Bingbot"><span class="sym allowed" aria-hidden="true">✓</span><span class="sr">allowed</span></td><td data-label="Googlebot"><span class="sym allowed" aria-hidden="true">✓</span><span class="sr">allowed</span></td></tr></tbody></table></div><p class="legend21">✓ allowed   ✗ blocked   – we could not read the website's robots.txt file (the file that tells crawlers what they may read)</p><ul class="note"><li><b>peninsulacanada.ca</b>: Our checker was shown a challenge page, so we could not read the site. This is a question for the site owner, not proof that AI crawlers are blocked.</li></ul><details class="sub-details"><summary>Other access checks</summary><div class="scroll"><table class="plain stack"><colgroup><col style="width:40%"><col style="width:16%"><col style="width:44%"></colgroup><thead><tr><th scope="col">Check</th><th scope="col">Result</th><th scope="col">Detail</th></tr></thead><tbody><tr><td class="rowhead">Important pages (important pages) that tell search engines to leave them out (a &quot;noindex&quot; tag)</td><td data-label="Result"><span class="gs gs-not-checked">? Could not tell</span></td><td data-label="Detail">We could not run this check on your pages.</td></tr><tr><td class="rowhead">Pages whose canonical tag (the tag that names the main copy of a page) points off your site or to a page we could not read</td><td data-label="Result"><span class="gs gs-not-checked">? Could not tell</span></td><td data-label="Detail">We could not run this check on your pages.</td></tr><tr><td class="rowhead">Our checker could read your pages</td><td data-label="Result"><span class="gs gs-fail">✗ Fail</span></td><td data-label="Detail">0 of 0, read as a normal browser after your CDN refused our crawler</td></tr></tbody></table></div></details></section>
+<section id="gate-read" class="gate"><h2 id="read">Can AI read it?</h2><p class="intro">Once a crawler is in, it has to read your words and your structured data (code that tells search engines and AI what a page is about) in the page your server sends, without errors.</p><p>No ID inside the code points to nothing.</p><details class="sub-details"><summary>Markup by page type, and the validity checks</summary><div class="scroll"><table class="plain stack"><colgroup><col style="width:50%"><col style="width:18%"><col style="width:32%"></colgroup><thead><tr><th scope="col">Check</th><th scope="col">Result</th><th scope="col">Value</th></tr></thead><tbody><tr><td class="rowhead">Links inside the markup that point to nothing (an @id, an ID inside that code, that no page defines)</td><td data-label="Result"><span class="gs gs-pass">✓ Pass</span></td><td data-label="Value">none</td></tr></tbody></table></div></details></section>
+<section id="gate-quote" class="gate"><h2 id="quote">Is it safe to quote?</h2><p class="intro">AI tools quote pages that say clearly what they are about and answer questions straight away. We checked a sample of your pages for both.</p><h3 class="sub">Does your code name what your pages talk about?</h3><p>On the 0 pages we sampled: how many mention each kind of thing, and how many declare it in their structured data.</p><div class="scroll"><table class="plain stack"><colgroup><col style="width:40%"><col style="width:30%"><col style="width:30%"></colgroup><thead><tr><th scope="col">What the pages talk about</th><th scope="col">Pages that mention it</th><th scope="col">Pages whose code declares it</th></tr></thead><tbody><tr><td class="rowhead">Your business</td><td data-label="Pages that mention it">0</td><td data-label="Pages whose code declares it">0</td></tr><tr><td class="rowhead">Products</td><td data-label="Pages that mention it">not measured</td><td data-label="Pages whose code declares it">not measured</td></tr><tr><td class="rowhead">Services</td><td data-label="Pages that mention it">not measured</td><td data-label="Pages whose code declares it">not measured</td></tr><tr><td class="rowhead">People</td><td data-label="Pages that mention it">not measured</td><td data-label="Pages whose code declares it">not measured</td></tr><tr><td class="rowhead">Places</td><td data-label="Pages that mention it">not measured</td><td data-label="Pages whose code declares it">not measured</td></tr></tbody></table></div><h3 class="sub">Do your pages answer questions straight away?</h3><p>On the 0 pages we sampled, we found 0 headings that ask a question. 0 of them are answered straight away, in the first sentences under the heading.</p></section>
+<section id="gate-trust" class="gate"><h2 id="trust">Can AI trust it?</h2><p class="intro">AI tools trust a business that is one clear thing: one name, one ID in its code, and links to public records they already trust, such as Wikidata.</p><figure class="emap"><div class="emap-wide"><svg viewBox="0 0 760 101" role="img" aria-labelledby="emap-t emap-d" class="emap-svg"><title id="emap-t">How the code on peninsulacanada.ca connects to the wider web of entities</title><desc id="emap-d">Solid lines are links your code makes today. Dashed red lines are links that are missing. Grey lines are facts Wikidata already holds.</desc><defs><marker id="em-ok-w" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="ah-ok"/></marker><marker id="em-miss-w" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="ah-miss"/></marker><marker id="em-wd-w" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="ah-wd"/></marker></defs><g><rect x="30" y="20" width="250" height="61" rx="10" class="n-you"/><text x="155" y="46" class="nt" text-anchor="middle">Peninsula Canada</text><text x="155" y="63" class="ns" text-anchor="middle">no business block in your code</text></g></svg></div><div class="emap-narrow"><svg viewBox="0 0 360 87" role="img" aria-label="How the code on peninsulacanada.ca connects to the wider web of entities. Solid lines are links your code makes today. Dashed red lines are links that are missing. Grey lines are facts Wikidata already holds." class="emap-svg"><defs><marker id="em-ok-n" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="ah-ok"/></marker><marker id="em-miss-n" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="ah-miss"/></marker><marker id="em-wd-n" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="ah-wd"/></marker></defs><g><rect x="44" y="12" width="296" height="61" rx="10" class="n-you"/><text x="192" y="38" class="nt" text-anchor="middle">Peninsula Canada</text><text x="192" y="55" class="ns" text-anchor="middle">no business block in your code</text></g></svg></div><figcaption class="legend"><span><i class="lk"></i>Linked in your code today</span><span><i class="lk miss"></i>Missing from your code</span><span><i class="lk wd"></i>Already known to Wikidata</span></figcaption></figure><details class="sub-details"><summary>The names, profiles and Wikidata entries we found</summary><ul class="found"><li>Profiles in sameAs: none.</li></ul><p class="note">We searched Wikidata by name on 16 October 2026 and found no entry for Peninsula Canada. To be confirmed by WLDM.</p></details><h3 class="sub">What to fix here</h3><article class="card finding sev-medium"><h3>Wikidata does not fully describe your business and its group</h3>
+<p class="failed">Failed check: The business has a Wikidata item that records its group</p>
+<p class="chips"><span class="chip sev-medium"><span aria-hidden="true">■</span> Medium</span> <span class="chip gate">Gate 4: trust</span> <span class="chip kind">Opportunity</span></p>
+<p class="why"><b>Why it matters.</b> Wikidata (a free, open database of facts) is one of the sources AI tools and search engines use to check who a business is and who owns it.</p>
+<p class="fixline"><b>Fix.</b> Create or update the Wikidata items for the business and its group, with the official website and ownership, citing public sources. WLDM confirms the right items with you first.</p>
+<details>
+<summary>What we found, and how you know it is done</summary>
+<ul class="found">
+<li>Wikidata has no item for Peninsula Canada.</li>
+</ul>
+<p class="ex-label">Examples</p>
+<ul class="evidence">
+<li>Wikidata has no item for Peninsula Canada</li>
+</ul>
+<p class="done-when"><b>Done when:</b> The business's Wikidata item exists, lists the official website and records its parent company.</p>
+<p class="effort"><b>Effort:</b> Longer work</p>
+</details>
+</article></section>
+<section id="competitors"><h2>How you compare</h2><p class="intro">The share of our checks each website passes. Your site is the dark bar, competitors are grey.</p><div class="bars"><div class="bar-row"><div class="name">pinklarkin.com</div><div class="bar-cell"><div class="track"><span class="bar" style="width:100%"></span></div><div class="val"><b>100%</b> · 39 of 39 checks passed <span class="pages">· 5 pages read</span></div></div></div><div class="bar-row"><div class="name">joinhomebase.com</div><div class="bar-cell"><div class="track"><span class="bar" style="width:100%"></span></div><div class="val"><b>100%</b> · 47 of 47 checks passed <span class="pages">· 5 pages read</span></div></div></div><div class="bar-row"><div class="name">bdo.ca</div><div class="bar-cell"><div class="track"><span class="bar" style="width:98%"></span></div><div class="val"><b>98%</b> · 51 of 52 checks passed <span class="pages">· 6 pages read</span></div></div></div><div class="bar-row"><div class="name">peocanada.com</div><div class="bar-cell"><div class="track"><span class="bar" style="width:98%"></span></div><div class="val"><b>98%</b> · 47 of 48 checks passed <span class="pages">· 5 pages read</span></div></div></div><div class="bar-row"><div class="name">brighthr.com</div><div class="bar-cell"><div class="track"><span class="bar" style="width:98%"></span></div><div class="val"><b>98%</b> · 42 of 43 checks passed <span class="pages">· 6 pages read</span></div></div></div><div class="bar-row"><div class="name">masseylaw.ca</div><div class="bar-cell"><div class="track"><span class="bar" style="width:97%"></span></div><div class="val"><b>97%</b> · 35 of 36 checks passed <span class="pages">· 5 pages read</span></div></div></div><div class="bar-row"><div class="name">adp.ca</div><div class="bar-cell"><div class="track"><span class="bar" style="width:97%"></span></div><div class="val"><b>97%</b> · 33 of 34 checks passed <span class="pages">· 6 pages read</span></div></div></div><div class="bar-row"><div class="name">connectsus.com</div><div class="bar-cell"><div class="track"><span class="bar" style="width:92%"></span></div><div class="val"><b>92%</b> · 24 of 26 checks passed <span class="pages">· 5 pages read</span></div></div></div><div class="bar-row"><div class="name">citationcanada.com</div><div class="bar-cell"><div class="track"><span class="bar" style="width:86%"></span></div><div class="val"><b>86%</b> · 32 of 37 checks passed <span class="pages">· 4 pages read</span></div></div></div><div class="bar-row"><div class="name">pivothrservices.com</div><div class="bar-cell"><div class="track"><span class="bar" style="width:84%"></span></div><div class="val"><b>84%</b> · 49 of 58 checks passed <span class="pages">· 6 pages read</span></div></div></div><div class="bar-row lead unread"><div class="name">peninsulacanada.ca<span class="you"> (you)</span></div><div class="bar-cell"><div class="track"><span class="bar na">not read</span></div></div></div></div><p class="note">Each site is read the same way, on up to six pages: the home page, an about or contact page, two pages that rank for your searches and two articles or profiles, where the site has them. Read on: connectsus.com 5 pages, pivothrservices.com 6, citationcanada.com 4, pinklarkin.com 5, brighthr.com 6, bdo.ca 6, joinhomebase.com 5, peocanada.com 5, adp.ca 6, masseylaw.ca 5. Not read: peninsulacanada.ca.</p><h3 class="sub">Who says who they are</h3><div class="scroll"><table class="plain stack crawlers ident4"><colgroup><col style="width:28%"><col style="width:18%"><col style="width:18%"><col style="width:18%"><col style="width:18%"></colgroup><thead><tr><th scope="col">Website</th><th scope="col">Describes the business</th><th scope="col">Business has an ID</th><th scope="col">Names a parent company</th><th scope="col">Links to Wikidata</th></tr></thead><tbody><tr><td class="rowhead">peninsulacanada.ca<span class="you"> (you)</span></td><td data-label="Describes the business"><span class="sym unread" aria-hidden="true">?</span><span class="sr">not read</span></td><td data-label="Business has an ID"><span class="sym unread" aria-hidden="true">?</span><span class="sr">not read</span></td><td data-label="Names a parent company"><span class="sym unread" aria-hidden="true">?</span><span class="sr">not read</span></td><td data-label="Links to Wikidata"><span class="sym unread" aria-hidden="true">?</span><span class="sr">not read</span></td></tr><tr><td class="rowhead">connectsus.com</td><td data-label="Describes the business"><span class="sym no" aria-hidden="true">✗</span><span class="sr">no</span></td><td data-label="Business has an ID"><span class="sym no" aria-hidden="true">✗</span><span class="sr">no</span></td><td data-label="Names a parent company"><span class="sym no" aria-hidden="true">✗</span><span class="sr">no</span></td><td data-label="Links to Wikidata"><span class="sym no" aria-hidden="true">✗</span><span class="sr">no</span></td></tr><tr><td class="rowhead">pivothrservices.com</td><td data-label="Describes the business"><span class="sym yes" aria-hidden="true">✓</span><span class="sr">yes</span></td><td data-label="Business has an ID"><span class="sym yes" aria-hidden="true">✓</span><span class="sr">yes</span></td><td data-label="Names a parent company"><span class="sym no" aria-hidden="true">✗</span><span class="sr">no</span></td><td data-label="Links to Wikidata"><span class="sym no" aria-hidden="true">✗</span><span class="sr">no</span></td></tr><tr><td class="rowhead">citationcanada.com</td><td data-label="Describes the business"><span class="sym yes" aria-hidden="true">✓</span><span class="sr">yes</span></td><td data-label="Business has an ID"><span class="sym yes" aria-hidden="true">✓</span><span class="sr">yes</span></td><td data-label="Names a parent company"><span class="sym yes" aria-hidden="true">✓</span><span class="sr">yes</span></td><td data-label="Links to Wikidata"><span class="sym no" aria-hidden="true">✗</span><span class="sr">no</span></td></tr><tr><td class="rowhead">pinklarkin.com</td><td data-label="Describes the business"><span class="sym yes" aria-hidden="true">✓</span><span class="sr">yes</span></td><td data-label="Business has an ID"><span class="sym yes" aria-hidden="true">✓</span><span class="sr">yes</span></td><td data-label="Names a parent company"><span class="sym yes" aria-hidden="true">✓</span><span class="sr">yes</span></td><td data-label="Links to Wikidata"><span class="sym no" aria-hidden="true">✗</span><span class="sr">no</span></td></tr><tr><td class="rowhead">brighthr.com</td><td data-label="Describes the business"><span class="sym yes" aria-hidden="true">✓</span><span class="sr">yes</span></td><td data-label="Business has an ID"><span class="sym no" aria-hidden="true">✗</span><span class="sr">no</span></td><td data-label="Names a parent company"><span class="sym yes" aria-hidden="true">✓</span><span class="sr">yes</span></td><td data-label="Links to Wikidata"><span class="sym no" aria-hidden="true">✗</span><span class="sr">no</span></td></tr><tr><td class="rowhead">bdo.ca</td><td data-label="Describes the business"><span class="sym yes" aria-hidden="true">✓</span><span class="sr">yes</span></td><td data-label="Business has an ID"><span class="sym yes" aria-hidden="true">✓</span><span class="sr">yes</span></td><td data-label="Names a parent company"><span class="sym no" aria-hidden="true">✗</span><span class="sr">no</span></td><td data-label="Links to Wikidata"><span class="sym no" aria-hidden="true">✗</span><span class="sr">no</span></td></tr><tr><td class="rowhead">joinhomebase.com</td><td data-label="Describes the business"><span class="sym yes" aria-hidden="true">✓</span><span class="sr">yes</span></td><td data-label="Business has an ID"><span class="sym yes" aria-hidden="true">✓</span><span class="sr">yes</span></td><td data-label="Names a parent company"><span class="sym no" aria-hidden="true">✗</span><span class="sr">no</span></td><td data-label="Links to Wikidata"><span class="sym no" aria-hidden="true">✗</span><span class="sr">no</span></td></tr><tr><td class="rowhead">peocanada.com</td><td data-label="Describes the business"><span class="sym yes" aria-hidden="true">✓</span><span class="sr">yes</span></td><td data-label="Business has an ID"><span class="sym yes" aria-hidden="true">✓</span><span class="sr">yes</span></td><td data-label="Names a parent company"><span class="sym no" aria-hidden="true">✗</span><span class="sr">no</span></td><td data-label="Links to Wikidata"><span class="sym no" aria-hidden="true">✗</span><span class="sr">no</span></td></tr><tr><td class="rowhead">adp.ca</td><td data-label="Describes the business"><span class="sym no" aria-hidden="true">✗</span><span class="sr">no</span></td><td data-label="Business has an ID"><span class="sym no" aria-hidden="true">✗</span><span class="sr">no</span></td><td data-label="Names a parent company"><span class="sym no" aria-hidden="true">✗</span><span class="sr">no</span></td><td data-label="Links to Wikidata"><span class="sym no" aria-hidden="true">✗</span><span class="sr">no</span></td></tr><tr><td class="rowhead">masseylaw.ca</td><td data-label="Describes the business"><span class="sym no" aria-hidden="true">✗</span><span class="sr">no</span></td><td data-label="Business has an ID"><span class="sym no" aria-hidden="true">✗</span><span class="sr">no</span></td><td data-label="Names a parent company"><span class="sym no" aria-hidden="true">✗</span><span class="sr">no</span></td><td data-label="Links to Wikidata"><span class="sym no" aria-hidden="true">✗</span><span class="sr">no</span></td></tr></tbody></table></div><p class="legend21">✓ yes   ✗ no   ? we could not read the site</p><p class="note">Of the sites we could read, pivothrservices.com, citationcanada.com, pinklarkin.com, brighthr.com, bdo.ca, joinhomebase.com and peocanada.com describe the business in code, pivothrservices.com, citationcanada.com, pinklarkin.com, bdo.ca, joinhomebase.com and peocanada.com give it an ID, citationcanada.com, pinklarkin.com and brighthr.com name a parent company, and none links it to Wikidata.</p></section>
+<section id="figures"><h2>Key figures</h2><p class="intro">The numbers behind this page, and why each one matters.</p><div class="figs"><div class="fig"><div class="v">0 of 7</div><div class="k">Google AI Overviews that cite peninsulacanada.ca</div><div class="why">Out of 7 searches, 7 showed an AI Overview.</div></div><div class="fig"><div class="v">0 of 7</div><div class="k">ChatGPT answers that cite or name Peninsula Canada</div><div class="why">For the same 7 searches, on 16 October 2026, one answer per search, from the gpt-4.1 model.</div></div></div></section>
+<section id="plan"><h2>Fix plan</h2><p class="intro">The fixes in the order we would do them, which is the order of the findings above. Each one says how much work it is and has a test, so you know when it is done.</p><ol class="plan">
+<li><span class="chip sev-medium mini"><span aria-hidden="true">■</span> Medium</span> <b>Create or update the Wikidata items for the business and its group, with the official website and ownership, citing public sources.</b> <span class="tag t">Effort: Longer work</span> <span class="done">Done when: The business's Wikidata item exists, lists the official website and records its parent company.</span></li>
+</ol></section>
+<section id="limits"><h2>What we could not check</h2><p class="intro">A free audit reads a lot, but not everything. This is what we could not check, what it means for this page, and what the full audit does about it.</p><div class="scroll"><table class="plain stack"><colgroup><col style="width:26%"><col style="width:40%"><col style="width:34%"></colgroup><thead><tr><th scope="col">What we could not check</th><th scope="col">What it means</th><th scope="col">In the full audit</th></tr></thead><tbody><tr><td class="rowhead">Other AI assistants, and repeat answers</td><td data-label="What it means">We checked Google's AI Overviews and ChatGPT, one answer per search. We did not check Perplexity, Gemini or Copilot, and AI answers change between runs and between users.</td><td data-label="In the full audit">The full audit checks Perplexity as well, and asks each search more than once.</td></tr><tr><td class="rowhead">Pages opened in a browser</td><td data-label="What it means">We could not open your pages in a browser this time, so we do not know whether scripts change the structured data.</td><td data-label="In the full audit">The full audit opens pages of every kind in a browser.</td></tr><tr><td class="rowhead">What your pages talk about</td><td data-label="What it means">The step that sorts the names on your pages into products, services, people and places did not run, so only your business name was sorted.</td><td data-label="In the full audit">The full audit sorts every name, and a person checks the result.</td></tr><tr><td class="rowhead">Wikidata matches</td><td data-label="What it means">The Wikidata entries on this page come from an automatic lookup. We have not yet checked them with you.</td><td data-label="In the full audit">The full audit confirms each Wikidata match with you before we recommend it.</td></tr><tr><td class="rowhead">How we read your site</td><td data-label="What it means">Your CDN refused our crawler, which says who it is, so we read robots.txt and your pages as a normal browser would, at the same polite pace: robots.txt obeyed, one page a second at most.</td><td data-label="In the full audit">The full audit asks your team to let our crawler in, so it can read your site as itself.</td></tr><tr><td class="rowhead">Competitors in depth</td><td data-label="What it means">We read each competitor on up to six pages (connectsus.com 5, pivothrservices.com 6, citationcanada.com 4, pinklarkin.com 5, brighthr.com 6, bdo.ca 6, joinhomebase.com 5, peocanada.com 5, adp.ca 6, masseylaw.ca 5), so their figures are indicative.</td><td data-label="In the full audit">The full audit agrees the list of competitors with you and reads more of each.</td></tr></tbody></table></div></section>
+<footer class="contact-foot"><p>Next step: we walk you through this page and agree which fixes to do first.</p><p class="contact">Questions about this page? Contact Peter at <a href="mailto:peter@wldm.io">peter@wldm.io</a>.</p><p>Prepared by WLDM. Search results and AI answers change daily, so you may see something different on another day.</p></footer>
+</div></body></html>
